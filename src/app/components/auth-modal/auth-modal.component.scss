@@ -1,0 +1,45 @@
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  text-align: center;
+  margin-bottom: 16px;
+  font-size: 1.5rem;
+  color: #1976d2;
+}
+
+mat-tab-group {
+  min-width: 320px;
+}
+
+app-signin,
+app-signup {
+  display: block;
+  padding: 16px 0;
+}
+
+.close-btn {
+  padding: 10px;
+  background: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px 0 rgba(25, 118, 210, 0.1);
+  cursor: pointer;
+  transition: background 0.18s, box-shadow 0.18s, color 0.18s;
+}
+.close-btn:hover,
+.close-btn:focus {
+  background: #e3f6ff;
+  color: #1976d2;
+  box-shadow: 0 4px 16px 0 rgba(25, 118, 210, 0.18);
+}
+.close-btn .material-icons {
+  font-size: 1.6rem;
+  color: #1976d2;
+}

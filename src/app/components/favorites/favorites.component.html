@@ -1,0 +1,27 @@
+<div class="favorites-container">
+    <div class="favorites-header">
+        <mat-icon class="fav-icon">favorite</mat-icon>
+        <h2>ჩემი ფავორიტები</h2>
+    </div>
+    <div *ngIf="favorites.length === 0" class="empty-msg">
+        ჯერ ფავორიტი პროდუქტი არ გაქვს.
+    </div>
+    <div class="favorites-list">
+        <div class="favorite-card" *ngFor="let product of favorites" (click)="selectFavorite(product.id)"
+            [class.selected]="selectedFavoriteId === product.id">
+            <img [src]="product.image" alt="{{product.title}}" />
+            <div class="fav-info">
+                <div class="fav-title">{{ product.title }}</div>
+                <div class="fav-rating" *ngIf="product.rating && selectedFavoriteId === product.id">
+                    <span class="star" *ngFor="let star of [1,2,3,4,5]">
+                        {{ star <= Math.round(product.rating) ? '⭐' : '☆' }} </span>
+                            <span class="rating-value">{{ product.rating | number:'1.1-1' }}</span>
+                </div>
+                <button class="fav-remove" (click)="removeFavorite(product.id); $event.stopPropagation()"
+                    mat-icon-button aria-label="ფავორიტიდან წაშლა">
+                    <mat-icon>delete</mat-icon>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

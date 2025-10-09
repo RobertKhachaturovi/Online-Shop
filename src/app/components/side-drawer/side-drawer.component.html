@@ -1,0 +1,534 @@
+<div class="sidenav-container">
+    <div class="sidenav" [class.open]="isDrawerOpen">
+        <div class="drawer-header" *ngIf="isDrawerOpen">
+            <button mat-icon-button (click)="closeDrawer()">
+                <mat-icon>close</mat-icon>
+            </button>
+        </div>
+        <ng-container *ngIf="!isMobile">
+            <div class="nav-items-container expanded">
+                <mat-nav-list>
+                    <a mat-list-item routerLink="/">
+                        <mat-icon>home</mat-icon>
+                        Home
+                    </a>
+                    <a mat-list-item (click)="openAuthModal()" style="cursor: pointer;">
+                        <mat-icon>person_add</mat-icon>
+                        Registration
+                    </a>
+                    <a mat-list-item routerLink="/profile">
+                        <mat-icon>person</mat-icon>
+                        Profile
+                    </a>
+                    <a mat-list-item routerLink="/help">
+                        <mat-icon>help_outline</mat-icon>
+                        Assistant
+                    </a>
+                    <a mat-list-item routerLink="/favorites">
+                        <mat-icon>favorite</mat-icon>
+                        Favorites
+                    </a>
+                </mat-nav-list>
+            </div>
+        </ng-container>
+        <ng-container *ngIf="isMobile">
+            <button class="filter-toggle-2" (click)="showNavItems = !showNavItems">
+                <span>ნავიგაცია</span>
+                <mat-icon [class.expanded]="showNavItems">{{ showNavItems ? 'expand_less' : 'expand_more' }}</mat-icon>
+            </button>
+            <div class="nav-items-container" [class.expanded]="showNavItems">
+                <mat-nav-list>
+                    <a mat-list-item routerLink="/">
+                        <mat-icon>home</mat-icon>
+                        Home
+                    </a>
+                    <a mat-list-item (click)="openAuthModal()" style="cursor: pointer;">
+                        <mat-icon>person_add</mat-icon>
+                        Registration
+                    </a>
+                    <a mat-list-item routerLink="/profile">
+                        <mat-icon>person</mat-icon>
+                        Profile
+                    </a>
+                    <a mat-list-item routerLink="/help">
+                        <mat-icon>help_outline</mat-icon>
+                        Assistant
+                    </a>
+                    <a mat-list-item routerLink="/favorites">
+                        <mat-icon>favorite</mat-icon>
+                        Favorites
+                    </a>
+                </mat-nav-list>
+            </div>
+        </ng-container>
+        <div style="text-align: center; margin-top: 16px;">
+            <button mat-stroked-button color="warn" (click)="resetFilters()">
+                <mat-icon>restart_alt</mat-icon>
+                ყველა ფილტრის გაუქმება
+            </button>
+        </div>
+        <div class="filters-section">
+            <button class="filter-toggle" (click)="toggleCategoryList()">
+                <mat-icon>filter_list</mat-icon>
+                კატეგორიები
+                <mat-icon>{{ showCategories ? 'expand_less' : 'expand_more' }}</mat-icon>
+            </button>
+
+            <div class="filter-group" *ngIf="showCategories">
+                <button mat-button (click)="onCategorySelect(null)"><mat-icon>apps</mat-icon> ყველა</button>
+                <button mat-button (click)="onCategorySelect(1)"><mat-icon>computer</mat-icon> Computer</button>
+                <button mat-button (click)="onCategorySelect(2)"><mat-icon>smartphone</mat-icon> Phones</button>
+            </div>
+            <button class="filter-toggle" (click)="showBrands = !showBrands">
+                <mat-icon>storefront</mat-icon>
+                ბრენდები
+                <mat-icon>{{ showBrands ? 'expand_less' : 'expand_more' }}</mat-icon>
+            </button>
+            <div class="filter-group" *ngIf="showBrands">
+                <ng-container *ngIf="brands.length > 0; else noBrands">
+                    <button mat-button [class.selected]="selectedBrand === null"
+                        (click)="onBrandSelect(null)">ყველა</button>
+                    <button mat-button *ngFor="let brand of brands" [class.selected]="selectedBrand === brand"
+                        (click)="onBrandSelect(brand)">{{ brand | titlecase }}</button>
+                </ng-container>
+                <ng-template #noBrands>
+                    <div class="no-brands-text">არ მოიძებნება</div>
+                </ng-template>
+            </div>
+            <button class="filter-toggle" (click)="togglePriceFilter = !togglePriceFilter">
+                <mat-icon>attach_money</mat-icon>
+                ფასის ფილტრი
+                <mat-icon>{{ togglePriceFilter ? 'expand_less' : 'expand_more' }}</mat-icon>
+            </button>
+            <div class="filter-group" *ngIf="togglePriceFilter">
+                <div class="price-row">
+                    <input type="number" [(ngModel)]="minPrice" placeholder="დან" min="0" class="price-input" />
+                    <input type="number" [(ngModel)]="maxPrice" placeholder="მდე" min="0" class="price-input" />
+                </div>
+                <button mat-stroked-button color="primary" (click)="onPriceFilter()">გაფილტრე</button>
+                <div style="display:flex; gap:8px; justify-content:center; margin-top:8px;">
+                    <button mat-stroked-button (click)="onSort('asc')">
+                        <mat-icon>arrow_upward</mat-icon>
+                        ფასი ზრდადობით
+                    </button>
+                    <button mat-stroked-button (click)="onSort('desc')">
+                        <mat-icon>arrow_downward</mat-icon>
+                        ფასი კლებადობით
+                    </button>
+                </div>
+            </div>
+
+            <button class="filter-toggle" (click)="showExtraSort = !showExtraSort">
+                <mat-icon>swap_vert</mat-icon>
+                სორტირება ფასით
+                <mat-icon>{{ showExtraSort ? 'expand_less' : 'expand_more' }}</mat-icon>
+            </button>
+            <div class="filter-group" *ngIf="showExtraSort">
+                <button (click)="onSort('asc')">
+                    <mat-icon>arrow_upward</mat-icon>
+                    ფასი ზრდადობით
+                </button>
+                <button (click)="onSort('desc')">
+                    <mat-icon>arrow_downward</mat-icon>
+                    ფასი კლებადობით
+                </button>
+            </div>
+
+            <button class="filter-toggle" (click)="showExtraFilters = !showExtraFilters">
+                <mat-icon>tune</mat-icon>
+                ფილტრები
+                <mat-icon>{{ showExtraFilters ? 'expand_less' : 'expand_more' }}</mat-icon>
+            </button>
+            <div class="filter-group" *ngIf="showExtraFilters">
+                <div class="checkbox-row">
+
+
+                    <div class="cyber-toggle-wrapper">
+                        <input class="cyber-toggle-checkbox" id="discount-toggle" type="checkbox"
+                            [(ngModel)]="onlyDiscounted" (change)="onDiscountFilter()" />
+                        <label class="cyber-toggle" for="discount-toggle">
+                            <div class="cyber-toggle-track">
+                                <div class="cyber-toggle-track-glow"></div>
+                                <div class="cyber-toggle-track-dots">
+                                    <span class="cyber-toggle-track-dot"></span>
+                                    <span class="cyber-toggle-track-dot"></span>
+                                    <span class="cyber-toggle-track-dot"></span>
+                                </div>
+                            </div>
+                            <div class="cyber-toggle-thumb">
+                                <div class="cyber-toggle-thumb-shadow"></div>
+                                <div class="cyber-toggle-thumb-highlight"></div>
+                                <div class="cyber-toggle-thumb-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                        <path d="M16.5 12c0-2.48-2.02-4.5-4.5-4.5s-4.5 2.02-4.5 4.5
+                          2.02 4.5 4.5 4.5 4.5-2.02 4.5-4.5zm-4.5 7.5c-4.14 0-7.5-3.36-7.5-7.5s3.36-7.5 
+                          7.5-7.5 7.5 3.36 7.5 7.5-3.36 7.5-7.5 7.5zm0-16.5c-4.97 
+                          0-9 4.03-9 9h-3l3.89 3.89.07.14 4.04-4.03h-3c0-3.87 3.13-7 
+                          7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 
+                          1.42c1.63 1.63 3.87 2.64 6.36 2.64 4.97 0 9-4.03 9-9s-4.03-9-9-9z" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="cyber-toggle-particles">
+                                <span class="cyber-toggle-particle"></span>
+                                <span class="cyber-toggle-particle"></span>
+                                <span class="cyber-toggle-particle"></span>
+                                <span class="cyber-toggle-particle"></span>
+                            </div>
+                        </label>
+                        <div class="cyber-toggle-labels">
+                            <span class="cyber-toggle-label-off">მხოლოდ აქციაზე</span>
+                            <span class="cyber-toggle-label-on">აქციაზე</span>
+                        </div>
+                    </div>
+
+
+                    <div class="cyber-toggle-wrapper">
+                        <input class="cyber-toggle-checkbox" id="stock-toggle" type="checkbox" [(ngModel)]="onlyInStock"
+                            (change)="onInStockFilter()" />
+                        <label class="cyber-toggle" for="stock-toggle">
+                            <div class="cyber-toggle-track">
+                                <div class="cyber-toggle-track-glow"></div>
+                                <div class="cyber-toggle-track-dots">
+                                    <span class="cyber-toggle-track-dot"></span>
+                                    <span class="cyber-toggle-track-dot"></span>
+                                    <span class="cyber-toggle-track-dot"></span>
+                                </div>
+                            </div>
+                            <div class="cyber-toggle-thumb">
+                                <div class="cyber-toggle-thumb-shadow"></div>
+                                <div class="cyber-toggle-thumb-highlight"></div>
+                                <div class="cyber-toggle-thumb-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                        <path d="M16.5 12c0-2.48-2.02-4.5-4.5-4.5s-4.5 2.02-4.5 4.5
+                          2.02 4.5 4.5 4.5 4.5-2.02 4.5-4.5zm-4.5 7.5c-4.14 0-7.5-3.36-7.5-7.5s3.36-7.5 
+                          7.5-7.5 7.5 3.36 7.5 7.5-3.36 7.5-7.5 7.5zm0-16.5c-4.97 
+                          0-9 4.03-9 9h-3l3.89 3.89.07.14 4.04-4.03h-3c0-3.87 3.13-7 
+                          7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 
+                          1.42c1.63 1.63 3.87 2.64 6.36 2.64 4.97 0 9-4.03 9-9s-4.03-9-9-9z" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="cyber-toggle-particles">
+                                <span class="cyber-toggle-particle"></span>
+                                <span class="cyber-toggle-particle"></span>
+                                <span class="cyber-toggle-particle"></span>
+                                <span class="cyber-toggle-particle"></span>
+                            </div>
+                        </label>
+                        <div class="cyber-toggle-labels">
+                            <span class="cyber-toggle-label-off">მხოლოდ მარაგში</span>
+                            <span class="cyber-toggle-label-on">მარაგშია</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <style>
+                .cyber-toggle-wrapper {
+                    display: inline-flex;
+                    flex-direction: column;
+                    align-items: center;
+                    text-align: center !important;
+                    position: relative;
+                    padding: 15px;
+                }
+
+                .cyber-toggle-checkbox {
+                    position: absolute;
+                    opacity: 0;
+                    width: 0;
+                    height: 0;
+                }
+
+                .cyber-toggle {
+                    position: relative;
+                    display: inline-block;
+                    width: 64px;
+                    height: 32px;
+                    cursor: pointer;
+                }
+
+                .cyber-toggle-track {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: #111;
+                    border-radius: 16px;
+                    overflow: hidden;
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5), inset 0 0 4px rgba(0, 0, 0, 0.8);
+                    transition: all 0.4s cubic-bezier(0.3, 1.5, 0.7, 1);
+                }
+
+                .cyber-toggle-track::before {
+                    content: "";
+                    position: absolute;
+                    inset: 2px;
+                    border-radius: 14px;
+                    background: #222;
+                    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+                    z-index: 0;
+                    transition: all 0.4s ease;
+                }
+
+                .cyber-toggle-track-glow {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: linear-gradient(90deg, #03e9f4, #4a00e0);
+                    opacity: 0;
+                    border-radius: 16px;
+                    z-index: 1;
+                    transition: all 0.4s ease;
+                }
+
+                .cyber-toggle-thumb {
+                    position: absolute;
+                    top: 4px;
+                    left: 4px;
+                    width: 24px;
+                    height: 24px;
+                    background: #151515;
+                    border-radius: 50%;
+                    z-index: 2;
+                    transition: all 0.4s cubic-bezier(0.3, 1.5, 0.7, 1);
+                    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+                }
+
+                .cyber-toggle-thumb-shadow {
+                    position: absolute;
+                    inset: 0;
+                    border-radius: 50%;
+                    background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.1), transparent 70%);
+                    z-index: 1;
+                }
+
+                .cyber-toggle-thumb-highlight {
+                    position: absolute;
+                    inset: 0;
+                    border-radius: 50%;
+                    background: radial-gradient(circle at 70% 70%, rgba(0, 0, 0, 0.2), transparent 70%);
+                    z-index: 1;
+                }
+
+                .cyber-toggle-thumb-icon {
+                    position: absolute;
+                    inset: 0;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 2;
+                    opacity: 0.7;
+                    transition: opacity 0.4s ease, transform 0.4s ease;
+                }
+
+                .cyber-toggle-thumb-icon svg {
+                    width: 14px;
+                    height: 14px;
+                    fill: #555;
+                    transition: fill 0.4s ease, transform 0.4s ease;
+                }
+
+                .cyber-toggle-track-dots {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    display: flex;
+                    justify-content: flex-end;
+                    align-items: center;
+                    padding-right: 10px;
+                    z-index: 1;
+                }
+
+                .cyber-toggle-track-dot {
+                    width: 3px;
+                    height: 3px;
+                    border-radius: 50%;
+                    background: #444;
+                    margin-left: 3px;
+                    opacity: 0.5;
+                    transition: all 0.4s ease;
+                }
+
+                .cyber-toggle-particles {
+                    position: absolute;
+                    inset: 0;
+                    z-index: 0;
+                    overflow: hidden;
+                    pointer-events: none;
+                }
+
+                .cyber-toggle-particle {
+                    position: absolute;
+                    width: 3px;
+                    height: 3px;
+                    background: #03e9f4;
+                    border-radius: 50%;
+                    opacity: 0;
+                    filter: blur(1px);
+                    transition: all 0.3s ease;
+                    box-shadow: 0 0 4px rgba(3, 233, 244, 0.8);
+                }
+
+                .cyber-toggle-particle:nth-child(1) {
+                    top: 15%;
+                    right: 20%;
+                }
+
+                .cyber-toggle-particle:nth-child(2) {
+                    top: 45%;
+                    right: 30%;
+                }
+
+                .cyber-toggle-particle:nth-child(3) {
+                    top: 25%;
+                    right: 40%;
+                }
+
+                .cyber-toggle-particle:nth-child(4) {
+                    top: 60%;
+                    right: 15%;
+                }
+
+                .cyber-toggle-labels {
+                    display: flex;
+                    justify-content: space-between;
+                    width: 100%;
+                    margin-top: 8px;
+                    font-size: 10px;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+                }
+
+                .cyber-toggle-label-off,
+                .cyber-toggle-label-on {
+                    color: #555;
+                    text-align: center !important;
+                    transition: all 0.4s ease;
+                }
+
+                /* Checked states */
+                .cyber-toggle-checkbox:checked+.cyber-toggle .cyber-toggle-track-glow {
+                    opacity: 0.5;
+                }
+
+                .cyber-toggle-checkbox:checked+.cyber-toggle .cyber-toggle-thumb {
+                    left: calc(100% - 28px);
+                    background: #222;
+                }
+
+                .cyber-toggle-checkbox:checked+.cyber-toggle .cyber-toggle-thumb-icon {
+                    transform: rotate(360deg);
+                }
+
+                .cyber-toggle-checkbox:checked+.cyber-toggle .cyber-toggle-thumb-icon svg {
+                    fill: #03e9f4;
+                }
+
+                .cyber-toggle-checkbox:checked+.cyber-toggle .cyber-toggle-track-dot {
+                    background: #03e9f4;
+                    box-shadow: 0 0 4px #03e9f4;
+                    opacity: 1;
+                }
+
+                .cyber-toggle-checkbox:checked~.cyber-toggle-labels .cyber-toggle-label-on {
+                    color: #03e9f4;
+                    text-shadow: 0 0 5px rgba(3, 233, 244, 0.5);
+                }
+
+                .cyber-toggle-checkbox:not(:checked)~.cyber-toggle-labels .cyber-toggle-label-off {
+                    color: #aaa;
+                }
+
+                .cyber-toggle-checkbox:checked+.cyber-toggle .cyber-toggle-particle {
+                    opacity: 1;
+                    animation: cyber-toggle-float 3s infinite alternate;
+                }
+
+                .cyber-toggle-checkbox:checked+.cyber-toggle .cyber-toggle-particle:nth-child(1) {
+                    animation-delay: 0s;
+                }
+
+                .cyber-toggle-checkbox:checked+.cyber-toggle .cyber-toggle-particle:nth-child(2) {
+                    animation-delay: 0.5s;
+                }
+
+                .cyber-toggle-checkbox:checked+.cyber-toggle .cyber-toggle-particle:nth-child(3) {
+                    animation-delay: 1s;
+                }
+
+                .cyber-toggle-checkbox:checked+.cyber-toggle .cyber-toggle-particle:nth-child(4) {
+                    animation-delay: 1.5s;
+                }
+
+                .cyber-toggle:hover .cyber-toggle-track::before {
+                    background: #272727;
+                }
+
+                .cyber-toggle:hover .cyber-toggle-thumb {
+                    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+                }
+
+                .cyber-toggle-checkbox:checked+.cyber-toggle:hover .cyber-toggle-track-glow {
+                    opacity: 0.7;
+                }
+
+                .cyber-toggle-checkbox:focus+.cyber-toggle {
+                    outline: none;
+                }
+
+                .cyber-toggle-checkbox:focus+.cyber-toggle::after {
+                    content: "";
+                    position: absolute;
+                    inset: -4px;
+                    border-radius: 20px;
+                    border: 2px solid rgba(3, 233, 244, 0.5);
+                    opacity: 0.5;
+                }
+
+                @keyframes cyber-toggle-float {
+                    0% {
+                        transform: translateY(0);
+                    }
+
+                    50% {
+                        transform: translateY(-4px);
+                    }
+
+                    100% {
+                        transform: translateY(0);
+                    }
+                }
+            </style>
+            <button class="filter-toggle" (click)="toggleRatingDropdown()">
+                <mat-icon>star_rate</mat-icon>
+                რეიტინგი
+                <mat-icon>{{ showRatingDropdown ? 'expand_less' : 'expand_more' }}</mat-icon>
+            </button>
+
+            <div class="filter-group" *ngIf="showRatingDropdown">
+                <button mat-button *ngFor="let option of ratingOptions" [class.selected]="minRating === option.value"
+                    (click)="selectRating(option.value)">
+                    <span style="font-size: 1.2em; color: #1976d2; margin-right: 8px;">☆</span>
+                    <ng-container *ngIf="option.value === 5">5 Only</ng-container>
+                    <ng-container *ngIf="option.value !== 5">{{ option.value }} And up</ng-container>
+                </button>
+            </div>
+
+
+        </div>
+
+    </div>
+
+    <div class="sidenav-content">
+        <ng-content></ng-content>
+    </div>
+</div>

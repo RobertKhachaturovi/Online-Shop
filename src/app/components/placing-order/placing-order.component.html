@@ -1,0 +1,174 @@
+<div class="checkout-animation-overlay" *ngIf="showCheckoutAnimation" (click)="closeCheckoutAnimation()">
+    <div class="checkout-animation-container" (click)="$event.stopPropagation()">
+        <div class="checkout-line"></div>
+        <div class="checkout-photo">
+            <img src="https://png.pngtree.com/png-vector/20250607/ourmid/pngtree-realistic-3d-shopping-cart-with-product-boxes-for-e-commerce-and-png-image_16486581.png"
+                alt="Checkout Animation" />
+        </div>
+        <div class="checkout-text">
+            <mat-icon>shopping_bag</mat-icon>
+            <span>Order Placed!</span>
+            <div class="subtitle">Your order has been successfully submitted</div>
+        </div>
+        <div class="checkout-confetti">
+            <div class="confetti-piece" *ngFor="let piece of confettiPieces" [style.--color]="piece.color"
+                [style.--left]="piece.left + '%'" [style.--delay]="piece.animationDelay + 's'">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div *ngIf="cartItems && cartItems.length > 0">
+    <div class="placing-order-layout placing-order-split">
+
+        <div class="order-details-block">
+            <h2>Placing Order</h2>
+            <div class="order-summary-box">
+                <div class="order-summary-header">
+                    <span>Your Order</span>
+                    <span>{{ cartItems.length }} Product</span>
+                </div>
+                <div *ngFor="let item of cartItems" class="order-summary-product">
+                    <div class="order-summary-img-wrap">
+                        <img [src]="item.product?.images?.[0] || 'https://via.placeholder.com/60x60?text=No+Image'" />
+                    </div>
+                    <div class="order-summary-info">
+                        <div class="order-summary-code">Code: {{ item.product?.code || item.product?._id ||
+                            item.product?.id }}</div>
+                        <div class="order-summary-title">{{ item.product?.title }}</div>
+                        <div class="order-summary-price">{{ item.product?.price?.current || item.product?.price }} ₾
+                        </div>
+                        <div class="order-summary-type">Physical</div>
+                    </div>
+                </div>
+            </div>
+            <form [formGroup]="orderForm" class="order-form">
+                <div class="form-section">
+                    <h3>1. Contact Details</h3>
+                    <div class="form-row">
+                        <label>Email</label>
+                        <input formControlName="email" type="email" />
+                        <div class="error" *ngIf="invoiceSubmitted && orderForm.get('email')?.invalid">Required</div>
+                    </div>
+                    <div class="form-row">
+                        <label>First Name</label>
+                        <input formControlName="firstName" />
+                        <div class="error" *ngIf="invoiceSubmitted && orderForm.get('firstName')?.invalid">Required
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <label>Last Name</label>
+                        <input formControlName="lastName" />
+                        <div class="error" *ngIf="invoiceSubmitted && orderForm.get('lastName')?.invalid">Required</div>
+                    </div>
+                    <div class="form-row">
+                        <label>ID code</label>
+                        <input formControlName="idCode" />
+                        <div class="error" *ngIf="invoiceSubmitted && orderForm.get('idCode')?.invalid">Required</div>
+                    </div>
+                    <div class="form-row">
+                        <label>Phone number</label>
+                        <input formControlName="phone" />
+                        <div class="error" *ngIf="invoiceSubmitted && orderForm.get('phone')?.invalid">Required</div>
+                    </div>
+                    <div class="form-row">
+                        <label>Additional contact number</label>
+                        <input formControlName="phone2" />
+                    </div>
+                </div>
+                <div class="form-section">
+                    <h3>2. Delivery Address</h3>
+                    <div class="form-row">
+                        <label>Select City</label>
+                        <input formControlName="city" />
+                        <div class="error" *ngIf="invoiceSubmitted && orderForm.get('city')?.invalid">Required</div>
+                    </div>
+                    <div class="form-row">
+                        <label>Select District</label>
+                        <input formControlName="district" />
+                        <div class="error" *ngIf="invoiceSubmitted && orderForm.get('district')?.invalid">Required</div>
+                    </div>
+                    <div class="form-row">
+                        <label>Address</label>
+                        <input formControlName="address" />
+                        <div class="error" *ngIf="invoiceSubmitted && orderForm.get('address')?.invalid">Required</div>
+                    </div>
+                </div>
+                <div class="form-section">
+                    <h3>3. Delivery Type</h3>
+                    <div class="form-row">
+                        <input formControlName="deliveryType" placeholder="Delivery type" />
+                    </div>
+                </div>
+                <div class="form-section">
+                    <h3>4. Payment Method</h3>
+                    <div class="form-row">
+                        <label>Payment</label>
+                        <select formControlName="payment">
+                            <option value="">Select</option>
+                            <option value="card">Pay with credit card</option>
+                            <option value="installment">Purchase with installment</option>
+                            <option value="points">Purchase with points</option>
+                            <option value="transfer">Transfer</option>
+                        </select>
+                        <div class="error" *ngIf="invoiceSubmitted && orderForm.get('payment')?.invalid">Required</div>
+                    </div>
+                </div>
+                <div class="form-section">
+                    <label>
+                        <input type="checkbox" required />
+                        Please Click Here to Read and Agree to the Warranty for Individual Customers
+                    </label>
+                </div>
+            </form>
+            <div class="e-voucher-info">
+                The E-Voucher Can Be Redeemed In Stores 21 Calendar Days After Receiving The Order
+            </div>
+        </div>
+
+        <div class="invoice-summary-block">
+            <div class="invoice-summary-box">
+                <div class="invoice-summary-row">
+                    <span>Amount</span>
+                    <span>{{ cartTotal | number:'1.0-0' }} ₾</span>
+                </div>
+                <div class="invoice-summary-row">
+                    <span>Delivery Fee</span>
+                    <span>0 ₾</span>
+                </div>
+                <div class="invoice-summary-row invoice-summary-sum">
+                    <span>Sum</span>
+                    <span>{{ cartTotal | number:'1.0-0' }} ₾</span>
+                </div>
+                <button class="buy-btn" (click)="openInvoiceModal()">Buy</button>
+                <div class="promo-row">
+                    <input type="text" placeholder="Promo Code" class="promo-input" />
+                    <button class="promo-activate">Activate</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="invoice-modal-overlay" *ngIf="showInvoiceModal">
+        <div class="invoice-modal">
+            <h2>Order Invoice</h2>
+            <div *ngFor="let item of cartItems" class="invoice-product">
+                <img [src]="item.product?.images?.[0] || 'https://via.placeholder.com/60x60?text=No+Image'" />
+                <div>
+                    <div class="invoice-title">{{ item.product?.title }}</div>
+                    <div>{{ item.product?.price?.current || item.product?.price }} ₾ x {{ item.quantity }}</div>
+                </div>
+            </div>
+            <div class="invoice-info">
+                <div>სახელი: {{ orderForm.value.firstName }}</div>
+                <div>გვარი: {{ orderForm.value.lastName }}</div>
+                <div>მისამართი: {{ orderForm.value.city }}, {{ orderForm.value.district }}, {{ orderForm.value.address
+                    }}</div>
+                <div>სულ: {{ cartTotal | number:'1.0-0' }} ₾</div>
+            </div>
+            <button class="checkout-btn" (click)="confirmCheckout()">Check Out</button>
+            <button class="close-invoice-btn" (click)="closeInvoiceModal()">Close</button>
+        </div>
+    </div>
+</div>

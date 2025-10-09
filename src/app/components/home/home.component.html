@@ -1,0 +1,229 @@
+<div class="home-layout" (click)="hideSuggestions()">
+
+    <app-side-drawer (categorySelected)="onCategorySelected($event)" (brandSelected)="onBrandSelect($event)"
+        (priceFilter)="onPriceFilter($event)" (discountedFilter)="onDiscountedFilter($event)"
+        (ratingFilter)="onRatingFilter($event)" (inStockFilter)="onInStockFilter($event)"
+        (sortChange)="onSortChange($event)" (drawerToggled)="onDrawerToggled($event)" #drawer></app-side-drawer>
+    <div class="main-content" [class.shifted]="isDrawerOpen">
+        <button class="drawer-toggle-btn" (click)="drawer.toggleDrawer()" *ngIf="!isDrawerOpen">
+            <mat-icon>menu</mat-icon>
+        </button>
+        <div class="home-search-bar">
+
+            <div class="search-input-wrapper">
+                <input type="text" placeholder="პროდუქტის ძიება..." [(ngModel)]="searchString"
+                    (input)="onSearch(searchString)" (click)="$event.stopPropagation()"
+                    (focus)="onSearchInputFocus()" />
+                <span class="search-icon">
+                    <mat-icon>search</mat-icon>
+                </span>
+                <div class="last-search-text" *ngIf="lastSearch">
+                    ბოლო ძებნა: {{ lastSearch }}
+                </div>
+            </div>
+
+            <div class="search-suggestions"
+                *ngIf="showSuggestions && searchString && searchString.trim().length > 1 && filteredSuggestions.length > 0"
+                (click)="$event.stopPropagation()">
+                <div class="suggestion-item" *ngFor="let product of filteredSuggestions; let i = index"
+                    (click)="onCardAction(product)">
+                    <img [src]="getImageForCard(product, i)" alt="{{product.title}}" class="suggestion-img">
+                    <div class="suggestion-content">
+
+                        <span class="suggestion-title">{{ product.title }}</span>
+                        <span class="suggestion-price">{{ product.price?.current || product.price }} {{
+                            product.price?.currency || '₾' }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button class="brand-panel-toggle" *ngIf="!showBrandPanel" (click)="showBrandPanel = true">
+            <mat-icon>chevron_left</mat-icon>
+        </button>
+        <div class="brand-side-panel" [class.open]="showBrandPanel">
+            <div class="brand-panel-header">
+                <span>ბრენდები</span>
+                <button class="close-btn" (click)="showBrandPanel = false">
+                    <mat-icon>close</mat-icon>
+                </button>
+
+            </div>
+            <div class="brand-gallery">
+                <div class="brand-card" *ngFor="let brand of brandsWithImages" (click)="selectBrand(brand.name)"
+                    [class.selected]="selectedBrand === brand.name">
+
+                    <img [src]="brand.image" [alt]="brand.name" />
+                    <div class="brand-name">{{ brand.name }}</div>
+                    <i class="fa-solid fa-tag brand-tag-icon"></i>
+                </div>
+                <div class="brand-card" (click)="selectBrand(null)" [class.selected]="!selectedBrand">
+                    <img src="https://ekracargo.com/public/uploads/all/YfWdPOyDnPMxQi8ktGIkZyhidHkIG46UalYKaoxk.jpg"
+                        alt="ყველა" />
+                    <div class="brand-name">ALL</div>
+                </div>
+            </div>
+        </div>
+
+        <button class="best-products-toggle" (click)="toggleBestProducts()" [class.active]="showBest">
+            <mat-icon>{{ showBest ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}</mat-icon>
+            <span>საუკეთესო შეთავაზებები</span>
+        </button>
+
+        <section *ngIf="showBest && bestProducts.length > 0" class="best-products"
+            [@slideInOut]="showBest ? 'in' : 'out'">
+            <div class="best-products__header">
+                <h2>საუკეთესო შეთავაზებები</h2>
+                <span class="best-products__subtitle">უმაღლესი რეიტინგით და ფასით შერჩეული</span>
+            </div>
+            <div class="best-products__grid">
+                <div class="best-card" *ngFor="let item of bestProducts; let i = index" (click)="onCardAction(item)">
+                    <div class="best-card__img-wrap">
+                        <img [src]="getImageForCard(item, i)" [alt]="item.title" />
+                        <div class="best-seller-badge">best seller</div>
+                        <div *ngIf="item.price?.discountPercentage" class="best-discount-inline">-{{
+                            item.price.discountPercentage }}%</div>
+                    </div>
+                    <div class="best-card__body">
+                        <div class="best-card__title">{{ item.title }}</div>
+                        <div class="best-card__rating" *ngIf="item.rating">
+                            <span class="star" *ngFor="let star of [1,2,3,4,5]">{{ star <= Math.round(item.rating) ? '⭐'
+                                    : '☆' }}</span>
+                                    <span class="best-card__rating-value">{{ item.rating | number:'1.1-1' }}</span>
+                        </div>
+                        <div class="best-card__price">
+
+                            <ng-template #bestNoDiscount>
+                                <span class="regular-price">{{ item.price?.current || item.price }} {{
+                                    item.price?.currency || '₾' }}</span>
+                            </ng-template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </section>
+        <div class="solid-line"></div>
+        <style>
+            .solid-line {
+                width: 100%;
+                height: 1px;
+                background: black;
+                margin: 25px auto;
+                position: relative;
+            }
+
+            .solid-line::after {
+                content: '◆';
+                position: absolute;
+                top: -17px;
+                left: 50%;
+                transform: translateX(-50%);
+                color: black;
+                font-size: 20px;
+                background: white;
+                padding: 0 15px;
+            }
+        </style>
+        <section class="card-list">
+            @for(item of filteredProducts; track $index){
+            <div class="modern-card card-animate" [style.--card-delay]="($index * 0.08) + 's'"
+                (click)="onCardAction(item)" style="cursor: pointer; position: relative; will-change: transform;">
+                <button class="favorite-btn" (click)="toggleFavorite(item); $event.stopPropagation()">
+                    <mat-icon [ngClass]="{'active': isFavorite(item)}">{{ isFavorite(item) ? 'favorite' :
+                        'favorite_border' }}</mat-icon>
+                </button>
+                <div class="stock-badge" [ngClass]="item.stock > 0 ? 'in-stock' : 'out-of-stock'">
+                    <span *ngIf="item.stock > 0" class="stock-icon">✔</span>
+                    <span *ngIf="item.stock <= 0" class="stock-icon">✘</span>
+                    <span>
+                        <ng-container *ngIf="item.stock > 0">
+                            In Stock : {{ item.stock }}
+                        </ng-container>
+                        <ng-container *ngIf="item.stock <= 0">
+                            Not in stock
+                        </ng-container>
+                    </span>
+                </div>
+                <div class="modern-card-img-wrap card">
+                    <img [src]="getImageForCard(item, $index)" class="modern-card-img" [alt]="item.title">
+                    <div *ngIf="item.price?.discountPercentage" class="discount-badge">
+                        -{{ item.price.discountPercentage }}%
+                    </div>
+                    <div class="card__content">
+                        <p class="card__title">{{ item.title }}</p>
+                        <p class="card__description">
+                            <ng-container *ngIf="item.description; else noDesc">
+                                {{ item.description }}
+                            </ng-container>
+                            <ng-template #noDesc>No description available for this product.</ng-template>
+                        </p>
+                    </div>
+                </div>
+                <div class="modern-card-body">
+                    <div class="product-title">{{ item.title }}</div>
+                    <div class="product-rating" *ngIf="item.rating">
+                        <span class="star" *ngFor="let star of [1,2,3,4,5]">
+                            {{ star <= Math.round(item.rating) ? '⭐' : '☆' }} </span>
+                                <span class="rating-value">{{ item.rating | number:'1.1-1' }}</span>
+                    </div>
+                    <div class="price-block">
+                        <ng-container
+                            *ngIf="item.price?.beforeDiscount && item.price?.beforeDiscount > item.price?.current; else noDiscount">
+                            <span class="old-price">{{ item.price.beforeDiscount }} {{ item.price.currency }}</span>
+                            <span class="new-price">{{ item.price.current }} {{ item.price.currency }}</span>
+                        </ng-container>
+                        <ng-template #noDiscount>
+                            <span class="regular-price">{{ item.price?.current || item.price }} {{ item.price?.currency
+                                || '₾' }}</span>
+                        </ng-template>
+                    </div>
+                    <div *ngIf="showSuccessMap.get(item._id)" class="cart-success-msg">
+                        წარმატებით დაემატა კალათაში!
+                    </div>
+                    <button mat-stroked-button color="primary" class="add-to-cart-btn" [disabled]="item.stock <= 0"
+                        (click)="addToCart(item); $event.stopPropagation()">
+                        <mat-icon>shopping_cart</mat-icon>
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+            }
+        </section>
+
+    </div>
+    <a routerLink="/cart" class="floating-cart-btn">
+        <mat-icon>shopping_cart</mat-icon>
+        კალათა
+    </a>
+    <button class="floating-receipt-btn" (click)="openReceiptSearch()">
+        <mat-icon>receipt</mat-icon>
+        ქვითრის გადამოწმება
+    </button>
+</div>
+<div class="pagination-container" *ngIf="pageList.length > 0">
+
+    <div class="pagination-wrapper">
+        @for(item of pageList; track $index){
+        <button class="pagination-btn" [class.active]="currentPage === item" (click)="onpageClick(item)">
+            <span class="page-number">{{item}}</span>
+        </button>
+        }
+    </div>
+    <div class="items-per-page-select">
+        <label for="itemsPerPage">Items per page:</label>
+        <select id="itemsPerPage" [(ngModel)]="itemsPerPage" (ngModelChange)="onItemsPerPageChange($event)">
+            <option *ngFor="let option of itemsPerPageOptions" [ngValue]="option">{{ option === 'all' ? 'all' : option
+                }}</option>
+        </select>
+    </div>
+</div>
+
+<div *ngIf="randomQuote">
+    <blockquote>
+        "{{ randomQuote.text || randomQuote.quote || randomQuote.content }}"
+        <footer>— {{ randomQuote.author || randomQuote.type || '' }}</footer>
+    </blockquote>
+    <pre>{{ randomQuote | json }}</pre>
+</div>
