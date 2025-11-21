@@ -1,0 +1,63 @@
+<div class="surprise-toys-page">
+    <div class="promo-banner">
+        🎁 აქცია! საყვარელ ადამიანისთვის, აირჩიე სიურპრიზ სათამაშო და მოიგე უფასო საჩუქარი! 💖
+    </div>
+    <div *ngIf="!selectedProduct" class="grid-container">
+        <div class="card" *ngFor="let product of visibleProducts" (click)="selectProduct(product)">
+            <img [src]="product.avatar" [alt]="product.name" />
+            <p>{{ product.name }}</p>
+        </div>
+    </div>
+    <div *ngIf="!selectedProduct && visibleProducts.length < products.length" class="show-more">
+        <button (click)="showMore()">მეტის ნახვა</button>
+    </div>
+    <div *ngIf="selectedProduct" class="card-detail">
+        <h2>შენ აირჩიე: {{ selectedProduct.name }}</h2>
+        <img [src]="selectedProduct.avatar" [alt]="selectedProduct.name" />
+        <div class="lang-select">
+            <label>აირჩიე ენა:</label>
+            <select [(ngModel)]="selectedLang">
+                <option value="ka-GE">ქართული</option>
+                <option value="en-US">English</option>
+                <option value="ru-RU">Русский</option>
+            </select>
+        </div>
+        <div class="voice-section">
+            <button (click)="startRecording()" [disabled]="isRecording">🎙 დაიწყე ჩაწერა</button>
+            <button (click)="stopRecording()" [disabled]="!isRecording">⏹ შეწყვიტე ჩაწერა</button>
+            <div class="manual-text">
+                <label for="manualText">ან შეიყვანე ტექსტი:</label>
+                <textarea id="manualText" [(ngModel)]="voiceText" rows="3" maxlength="200"
+                    placeholder="ჩაწერე ტექსტი ხელით" class="manual-textarea"></textarea>
+                <div class="helper">
+                    <span>ტექსტი გამოჩნდება ბარათზე</span>
+                    <span class="counter">{{ voiceText.length }}/200</span>
+                </div>
+            </div>
+        </div>
+        <div *ngIf="voiceText" class="card-preview">
+            <h3>მზადაა შენი ბარათი:</h3>
+            <div class="preview">
+                <img [src]="selectedProduct.avatar" [alt]="selectedProduct.name" />
+                <p>{{ voiceText }}</p>
+            </div>
+        </div>
+
+
+        <div *ngIf="voiceText && !isWrappingComplete" class="wrap-section">
+            <button (click)="wrapGift()" class="wrap-btn">🎁 შეფუთვა</button>
+        </div>
+
+
+        <div *ngIf="isWrappingComplete" class="wrapping-animation">
+            <div class="wrapping-container">
+                <div class="wrapping-icon">🎁</div>
+                <h3>შეფუთვა მიმდინარეობს...</h3>
+                <div class="loading-spinner"></div>
+            </div>
+        </div>
+
+        <button (click)="resetSelection()" class="back-btn" *ngIf="!isWrappingComplete">⬅ დაბრუნება
+            სათამაშოებზე</button>
+    </div>
+</div>

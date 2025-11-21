@@ -1,0 +1,80 @@
+<div class="final-presentation-page">
+    <div class="confetti-overlay" *ngIf="showConfetti">
+        <div class="confetti-piece" *ngFor="let piece of confettiPieces" [style.--color]="piece.color"
+            [style.--left]="piece.left + '%'" [style.--delay]="piece.animationDelay + 's'">
+        </div>
+    </div>
+
+    <div class="presentation-container">
+        <div class="header">
+            <h1>🎉 შეკვეთა წარმატებით დასრულდა!</h1>
+            <p>თქვენი პროდუქტები მზადაა შეფუთვისთვის</p>
+        </div>
+
+        <div class="products-grid">
+            <div class="purchased-products">
+                <h2>🛍️ მაღაზიიდან ნაყიდი პროდუქტები</h2>
+
+                <div class="product-list">
+                    <div class="product-item" *ngFor="let item of purchasedItems; let i = index">
+                        <img [src]="item.product?.images?.[0] || 'https://via.placeholder.com/100x100?text=No+Image'"
+                            [alt]="item.product?.title" class="product-image">
+                        <div class="product-details">
+                            <h3>{{ item.product?.title || 'No Title' }}</h3>
+                            <p class="quantity">რაოდენობა: {{ item.quantity || 0 }}</p>
+                            <p class="unit-price">
+                                ერთეულის ფასი: {{ (item.product?.price?.current || item.product?.price ||
+                                item.price?.current || item.price ||
+                                0) | number:'1.0-2' }} ₾
+                            </p>
+                            <p class="price">
+                                ჯამური ფასი: {{ (item.quantity * (item.product?.price?.current || item.product?.price ||
+                                item.price?.current ||
+                                item.price || 0)) | number:'1.0-2' }} ₾
+                            </p>
+                        </div>
+
+                    </div>
+                    <div *ngIf="purchasedItems.length === 0" class="no-items"
+                        style="text-align: center; padding: 20px; color: #666;">
+                        <p>მაღაზიიდან ნაყიდი პროდუქტები არ მოიძებნა</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="gift-product" *ngIf="giftProduct">
+                <h2>🎁 საჩუქარი</h2>
+                <div class="gift-container">
+                    <img [src]="giftProduct.avatar" [alt]="giftProduct.name" class="gift-image">
+                    <div class="gift-details">
+                        <h3>{{ giftProduct.name }}</h3>
+                        <div class="voice-message" *ngIf="voiceMessage">
+                            <p class="message-label">შეტყობინება:</p>
+                            <p class="message-text">"{{ voiceMessage }}"</p>
+                        </div>
+                        <div class="gift-badge">უფასო</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="summary-section">
+            <div class="summary-card">
+                <h3>📋 შეკვეთის დეტალები</h3>
+                <div class="summary-details">
+                    <p><strong>ქვითრის ნომერი:</strong> {{ receiptNumber }}</p>
+                    <p><strong>თარიღი:</strong> {{ date }}</p>
+                    <p><strong>ჯამური ფასი:</strong> {{ total | number:'1.0-2' }} ₾</p>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="action-buttons">
+            <button class="print-btn" (click)="printReceipt()">🖨️ ქვითრის დაბეჭდვა</button>
+            <button class="home-btn" (click)="goHome()">🏠 მთავარ გვერდზე დაბრუნება</button>
+
+        </div>
+    </div>
+</div>

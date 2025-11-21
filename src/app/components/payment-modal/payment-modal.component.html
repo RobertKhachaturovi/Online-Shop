@@ -1,0 +1,72 @@
+<div class="payment-modal-container">
+    <div class="summary-box">
+        <h3>შეკვეთის მიმოხილვა</h3>
+        <div class="summary-items" *ngIf="cartItems?.length">
+            <div class="summary-item" *ngFor="let item of cartItems">
+                <img [src]="item.product?.images?.[0] || 'https://via.placeholder.com/50'"
+                    [alt]="item.product?.title || 'პროდუქტის სურათი არ არის'" />
+                <div class="info">
+                    <div class="title">{{ item.product?.title }}</div>
+                    <div class="details">
+                        რაოდენობა: {{ item.quantity }} | ერთეულის ფასი:
+                        {{ item.product?.price?.current || item.product?.price }} ₾
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="total">
+            <strong>სრული გადასახდელი თანხა:</strong>
+            {{ totalAmount | number : '1.2-2' }} ₾
+        </div>
+    </div>
+
+    <!-- 💳 Payment Form -->
+    <form [formGroup]="paymentForm">
+        <mat-form-field appearance="fill">
+            <mat-label>ბარათის ნომერი</mat-label>
+            <input matInput formControlName="cardNumber" maxlength="16" required />
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+            <mat-label>სრული სახელი</mat-label>
+            <input matInput formControlName="cardHolder" required />
+        </mat-form-field>
+
+        <div class="row">
+            <mat-form-field appearance="fill">
+                <mat-label>ვადა (MM/YY)</mat-label>
+                <input matInput formControlName="expiry" placeholder="MM/YY" required />
+            </mat-form-field>
+
+            <mat-form-field appearance="fill">
+                <mat-label>CVV</mat-label>
+                <input matInput formControlName="cvv" maxlength="3" required type="password" />
+            </mat-form-field>
+        </div>
+
+        <!-- ბანკების ლოგოები -->
+        <div class="three-boxes">
+            <div class="box">
+                <img src="https://madloba.info/media/images/logo_TBS.max-1920x1080.format-webp.mwtmk.webp"
+                    alt="TBC Bank" />
+            </div>
+            <div class="box">
+                <img src="https://gemug.ge/wp-content/uploads/2012/05/saqarthvelos-bankis-mobilbanki-aplikatsia.jpg"
+                    alt="Bank of Georgia" />
+            </div>
+            <div class="box">
+                <img src="https://libertybank.ge/m/i/logo-fb-en.png" alt="Liberty Bank" />
+            </div>
+        </div>
+
+        <!-- მოქმედების ღილაკები -->
+        <div class="actions">
+            <button mat-button type="button" (click)="onCancel()">გაუქმება</button>
+
+            <button mat-flat-button color="primary" type="button" [disabled]="paymentForm.invalid"
+                (click)="openGiftDialog()">
+                გადახდა
+            </button>
+        </div>
+    </form>
+</div>

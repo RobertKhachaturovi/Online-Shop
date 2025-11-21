@@ -1,0 +1,13 @@
+<h2 mat-dialog-title>🎁 საჩუქრად გაგზავნა</h2>
+
+<mat-dialog-content>
+    <p>
+        თუ ეს პროდუქტი განკუთვნილია საჩუქრად, ჩვენ კურიერით გავაგზავნით
+        სპეციალურ შეფუთვაში.
+    </p>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+    <button mat-button (click)="close('no')">არა</button>
+    <button mat-flat-button color="primary" (click)="close('yes')">დიახ</button>
+</mat-dialog-actions>

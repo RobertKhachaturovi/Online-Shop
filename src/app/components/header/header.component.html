@@ -1,0 +1,34 @@
+<div class="header-content">
+    <div class="header-logo">
+        <img class="logo-img" src="https://www.codester.com/static/uploads/items/000/035/35801/preview/003.jpg"
+            alt="TechnoZone Logo" />
+        <span class="technozone-text" (click)="goToHomeAndRefresh()" [class.loading]="isLoading">
+            {{ isLoading ? 'TechnoZone...' : 'TechnoZone' }}
+        </span>
+
+    </div>
+    <div class="hamburger" (click)="toggleMenu()">
+        <span [class.open]="menuOpen"></span>
+        <span [class.open]="menuOpen"></span>
+        <span [class.open]="menuOpen"></span>
+    </div>
+    <div class="header-actions" [class.open]="menuOpen">
+        <div *ngIf="!isLoggedIn" class="auth-buttons">
+            <button class="header-btn signin-btn" (click)="openSignInModal()">
+                <span class="material-icons">login</span> Log In
+            </button>
+            <button class="header-btn signup-btn" (click)="openSignUpModal()">
+                <span class="material-icons">person_add</span> Sign Up
+            </button>
+        </div>
+
+        <div *ngIf="isLoggedIn" class="user-actions">
+            <button class="header-btn profile-btn" (click)="goToProfile()">
+                <span class="material-icons">account_circle</span> Profile
+            </button>
+            <button class="header-btn logout-btn" (click)="logout()">
+                <span class="material-icons">logout</span> Log Out
+            </button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,175 @@
+<div class="sidenav-container">
+    <div class="sidenav" [class.open]="isDrawerOpen">
+        <div class="drawer-header" *ngIf="isDrawerOpen">
+            <button mat-icon-button (click)="closeDrawer()"><mat-icon>close</mat-icon></button>
+        </div>
+        <div style="text-align:center; margin-top:16px;">
+            <button mat-stroked-button color="warn" (click)="resetFilters()">
+                <mat-icon>restart_alt</mat-icon> ყველა ფილტრის გაუქმება
+            </button>
+        </div>
+        <ng-container *ngIf="!isMobile">
+            <div class="nav-items-container expanded">
+                <mat-nav-list>
+                    <a mat-list-item routerLink="/"><mat-icon>home</mat-icon> Home</a>
+                    <a mat-list-item (click)="openAuthModal()" style="cursor:pointer;">
+                        <mat-icon>person_add</mat-icon> Registration
+                    </a>
+                    <a mat-list-item routerLink="/profile"><mat-icon>person</mat-icon> Profile</a>
+                    <a mat-list-item routerLink="/help"><mat-icon>help_outline</mat-icon> Assistant</a>
+                    <a mat-list-item routerLink="/favorites"><mat-icon>favorite</mat-icon> Favorites</a>
+                    <a mat-list-item routerLink="/surprise-toys"><mat-icon>card_giftcard</mat-icon> Surprise Toys</a>
+                </mat-nav-list>
+            </div>
+        </ng-container>
+
+        <ng-container *ngIf="isMobile">
+            <button class="filter-toggle-2" (click)="showNavItems = !showNavItems">
+                <span>ნავიგაცია</span>
+                <mat-icon>{{ showNavItems ? 'expand_less' : 'expand_more' }}</mat-icon>
+            </button>
+            <div class="nav-items-container" [class.expanded]="showNavItems">
+                <mat-nav-list>
+                    <a mat-list-item routerLink="/"><mat-icon>home</mat-icon> Home</a>
+                    <a mat-list-item (click)="openAuthModal()" style="cursor:pointer;">
+                        <mat-icon>person_add</mat-icon> Registration
+                    </a>
+                    <a mat-list-item routerLink="/profile"><mat-icon>person</mat-icon> Profile</a>
+                    <a mat-list-item routerLink="/help"><mat-icon>help_outline</mat-icon> Assistant</a>
+                    <a mat-list-item routerLink="/favorites"><mat-icon>favorite</mat-icon> Favorites</a>
+                </mat-nav-list>
+            </div>
+        </ng-container>
+
+
+
+        <div class="filters-section">
+
+            <button class="filter-toggle" (click)="toggleFilter('categories')">
+                <mat-icon>filter_list</mat-icon> კატეგორიები
+                <mat-icon>{{ showCategories ? 'expand_less' : 'expand_more' }}</mat-icon>
+            </button>
+            <div class="filter-group" *ngIf="showCategories">
+                <button mat-button (click)="onCategorySelect(null)">ყველა</button>
+                <button mat-button (click)="onCategorySelect(1)">Computer</button>
+                <button mat-button (click)="onCategorySelect(2)">Phones</button>
+            </div>
+
+
+            <button class="filter-toggle" (click)="toggleFilter('brands')">
+                <mat-icon>storefront</mat-icon> ბრენდები
+                <mat-icon>{{ showBrands ? 'expand_less' : 'expand_more' }}</mat-icon>
+            </button>
+            <div class="filter-group" *ngIf="showBrands">
+                <ng-container *ngIf="brands.length > 0; else noBrands">
+                    <button mat-button [class.selected]="selectedBrand === null"
+                        (click)="onBrandSelect(null)">ყველა</button>
+                    <button mat-button *ngFor="let brand of brands" [class.selected]="selectedBrand === brand"
+                        (click)="onBrandSelect(brand)">
+                        {{ brand | titlecase }}
+                    </button>
+                </ng-container>
+                <ng-template #noBrands>
+                    <div class="no-brands-text">არ მოიძებნება</div>
+                </ng-template>
+            </div>
+
+            <button class="filter-toggle" (click)="toggleFilter('price')">
+                <mat-icon>attach_money</mat-icon> ფასის ფილტრი
+                <mat-icon>{{ togglePriceFilter ? 'expand_less' : 'expand_more' }}</mat-icon>
+            </button>
+            <div class="filter-group" *ngIf="togglePriceFilter">
+                <div class="price-row">
+                    <input type="number" [(ngModel)]="minPrice" placeholder="დან" class="price-input" />
+                    <input type="number" [(ngModel)]="maxPrice" placeholder="მდე" class="price-input" />
+                </div>
+                <div class="price-buttons">
+                    <button mat-stroked-button color="primary" (click)="onPriceFilter()">გაფილტრე</button>
+                    <button mat-stroked-button (click)="onSort('asc')">ფასი ზრდადობით</button>
+                    <button mat-stroked-button (click)="onSort('desc')">ფასი კლებადობით</button>
+                </div>
+            </div>
+            <style>
+                .price-row {
+                    display: flex;
+                    gap: 10px;
+                    justify-content: center;
+                    margin-bottom: 12px;
+                }
+
+                .price-input {
+                    width: 90px;
+                    padding: 6px 10px;
+                    border: 2px solid #1976d2;
+                    /* ლურჯი ზოლი */
+                    border-radius: 8px;
+                    text-align: center;
+                    font-weight: 500;
+                    color: #1976d2;
+                    background-color: #f5f5f5;
+                    transition: all 0.2s ease;
+                }
+
+                .price-input:focus {
+                    outline: none;
+                    border-color: #0d47a1;
+                    background-color: #e3f2fd;
+                    box-shadow: 0 0 6px rgba(25, 118, 210, 0.5);
+                }
+
+                .price-buttons {
+                    display: flex;
+                    gap: 8px;
+                    justify-content: center;
+                    flex-wrap: wrap;
+                }
+
+                .price-buttons button {
+                    min-width: 130px;
+                    font-weight: 500;
+                }
+            </style>
+            <button class="filter-toggle" (click)="toggleFilter('extraFilters')">
+                <mat-icon>tune</mat-icon> ფილტრები
+                <mat-icon>{{ showExtraFilters ? 'expand_less' : 'expand_more' }}</mat-icon>
+            </button>
+            <div class="filter-group" *ngIf="showExtraFilters">
+                <div class="toggle-item">
+
+                    <div class="toggle-border">
+                        <input id="discount" type="checkbox" [(ngModel)]="onlyDiscounted"
+                            (change)="onDiscountFilter()" />
+                        <label for="discount">
+                            <div class="handle"></div>
+                        </label>
+                    </div>
+                    <span class="toggle-label">მხოლოდ აქციაზე</span>
+                </div>
+
+                <div class="toggle-item">
+
+                    <div class="toggle-border">
+                        <input id="stock" type="checkbox" [(ngModel)]="onlyInStock" (change)="onInStockFilter()" />
+                        <label for="stock">
+                            <div class="handle"></div>
+                        </label>
+                    </div><span class="toggle-label">მარაგშია</span>
+                </div>
+            </div>
+
+            <button class="filter-toggle" (click)="toggleFilter('rating')">
+                <mat-icon>star_rate</mat-icon> რეიტინგი
+                <mat-icon>{{ showRatingDropdown ? 'expand_less' : 'expand_more' }}</mat-icon>
+            </button>
+            <div class="filter-group" *ngIf="showRatingDropdown">
+                <button mat-button *ngFor="let option of ratingOptions" [class.selected]="minRating === option.value"
+                    (click)="selectRating(option.value)">
+                    {{ option.label }}
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="sidenav-content">
+        <ng-content></ng-content>
+    </div>
+</div>

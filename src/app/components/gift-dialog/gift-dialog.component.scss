@@ -1,0 +1,26 @@
+:host {
+  display: block;
+  padding: 16px;
+}
+
+mat-dialog-content {
+  font-size: 15px;
+  color: #333;
+  margin-top: 8px;
+}
+
+mat-dialog-actions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+button[mat-button] {
+  color: #555;
+}
+
+button[mat-flat-button] {
+  background-color: #1976d2;
+  color: white;
+}

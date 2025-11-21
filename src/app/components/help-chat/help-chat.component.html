@@ -1,0 +1,84 @@
+<div class="help-chat-container">
+    <div class="chat-header">
+        <div class="chat-avatar">
+            <mat-icon style="font-size:2.2rem;">support_agent</mat-icon>
+        </div>
+        <div class="chat-title">
+            <ng-container *ngIf="headerOperatorName; else searchingHeader">
+                {{ headerOperatorName }}
+                <div class="chat-operator-label">ოპერატორი</div>
+            </ng-container>
+            <ng-template #searchingHeader>
+                ოპერატორი ეძებს...
+            </ng-template>
+        </div>
+    </div>
+
+    <div class="ready-questions">
+        <span>მზა კითხვები:</span>
+        <button *ngFor="let q of readyQuestions" (click)="askReadyQuestion(q.q)">
+            {{ q.q }}
+        </button>
+    </div>
+
+    <div class="chat-box">
+        <ng-container *ngFor="let msg of chat; let i = index">
+            <div [ngClass]="msg.from">
+                <div class="msg-bubble">
+                    {{ msg.text }}
+                    <div class="msg-time">{{ getTime(i) }}</div>
+                </div>
+            </div>
+        </ng-container>
+
+
+        <div *ngIf="loading" class="chat-loading-row">
+            <span class="chat-spinner"></span>
+            <span class="chat-loading-text">ოპერატორი ეძებს პასუხს...</span>
+        </div>
+
+        <div *ngIf="!loading && operatorName" class="chat-operator-row">
+            <mat-icon style="vertical-align: middle; color: #1976d2;">person</mat-icon>
+            <span class="chat-operator-name">{{ operatorName }} პასუხობს...</span>
+        </div>
+    </div>
+
+    <form (ngSubmit)="sendUserMessage()" class="input-row">
+        <input type="text" [(ngModel)]="userInput" name="userInput" placeholder="ჩაწერე კითხვა..." autocomplete="off" />
+        <button type="submit">გაგზავნა</button>
+    </form>
+    <button class="close-chat-btn" (click)="openFeedbackModal()">ჩათის დახურვა</button>
+
+
+    <div class="feedback-modal-overlay" *ngIf="feedbackModalOpen">
+        <div class="feedback-modal">
+            <div class="feedback-title">How would you rate the support you received?</div>
+            <div class="feedback-rating-row">
+                <button type="button" [class.selected]="feedbackRating === 1" (click)="setFeedbackRating(1)">
+                    <span class="emoji">😠</span> Very Bad
+                </button>
+                <button type="button" [class.selected]="feedbackRating === 2" (click)="setFeedbackRating(2)">
+                    <span class="emoji">🙁</span> Bad
+                </button>
+                <button type="button" [class.selected]="feedbackRating === 3" (click)="setFeedbackRating(3)">
+                    <span class="emoji">😐</span> Average
+                </button>
+                <button type="button" [class.selected]="feedbackRating === 4" (click)="setFeedbackRating(4)">
+                    <span class="emoji">🙂</span> Good
+                </button>
+                <button type="button" [class.selected]="feedbackRating === 5" (click)="setFeedbackRating(5)">
+                    <span class="emoji">🤩</span> Loved
+                </button>
+            </div>
+
+            <textarea [(ngModel)]="feedbackComment" placeholder="Your message here ..." rows="3"></textarea>
+            <div class="feedback-actions">
+                <button type="button" class="send-btn" (click)="sendFeedback()"
+                    [disabled]="!feedbackRating || feedbackSent">Send</button>
+                <button type="button" class="home-btn" (click)="goToHome()">Back to home page</button>
+            </div>
+            <div class="feedback-thankyou" *ngIf="feedbackSent">Thank you for your feedback!</div>
+            <button class="feedback-close" (click)="closeFeedbackModal()">×</button>
+        </div>
+    </div>
+</div>

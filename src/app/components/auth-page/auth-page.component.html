@@ -1,0 +1,19 @@
+<section>
+    <div class="auth-container">
+        <div class="auth-content">
+            <div class="toggle-buttons">
+                <button class="toggle-btn" [class.active]="showSignIn" (click)="showSignIn = true">
+                    Sign In
+                </button>
+                <button class="toggle-btn" [class.active]="!showSignIn" (click)="showSignIn = false">
+                    Sign Up
+                </button>
+            </div>
+
+            <div class="form-container">
+                <app-signin *ngIf="showSignIn"></app-signin>
+                <app-signup *ngIf="!showSignIn"></app-signup>
+            </div>
+        </div>
+    </div>
+</section>
