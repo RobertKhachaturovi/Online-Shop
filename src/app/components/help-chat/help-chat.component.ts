@@ -1,7 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Store, Select } from '@ngxs/store';
+import { LanguageState } from '../../state/language.state';
+import { Observable, Subscription } from 'rxjs';
 
 interface ChatMessage {
   text: string;
@@ -12,36 +16,13 @@ interface ChatMessage {
 @Component({
   selector: 'app-help-chat',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatIconModule],
+  imports: [CommonModule, FormsModule, MatIconModule, TranslateModule],
   templateUrl: './help-chat.component.html',
   styleUrl: './help-chat.component.scss',
 })
-export class HelpChatComponent {
-  readyQuestions = [
-    {
-      q: 'როგორ შევიძინო პროდუქტი?',
-      a: 'პროდუქტის შესაძენად დაამატეთ კალათაში და დააჭირეთ "Check Out".',
-    },
-    {
-      q: 'როგორ დავრეგისტრირდე?',
-      a: 'რეგისტრაციისთვის გადადით "Registration" გვერდზე და შეავსეთ ფორმა.',
-    },
-    {
-      q: 'როგორ დავუკავშირდე მხარდაჭერას?',
-      a: 'მხარდაჭერასთან დასაკავშირებლად გამოიყენეთ კონტაქტის ფორმა ან მოგვწერეთ ელფოსტაზე.',
-    },
-    {
-      q: 'შეკვეთის სტატუსის ნახვა',
-      a: 'შეკვეთის სტატუსის სანახავად გადადით თქვენს პროფილში.',
-    },
-  ];
-
-  randomBotReplies = [
-    'ვწუხვართ, ამ კითხვაზე პასუხი ვერ მოიძებნა.',
-    'ამ კითხვაზე პასუხი არ გვაქვს. სცადეთ სხვა კითხვა!',
-    'ვერ გიპასუხებთ ამ კითხვაზე, სცადეთ მზა კითხვებიდან აირჩიოთ.',
-    'სამწუხაროდ, ამ კითხვაზე პასუხი არ მოიძებნა.',
-  ];
+export class HelpChatComponent implements OnInit, OnDestroy {
+  readyQuestions: any[] = [];
+  randomBotReplies: string[] = [];
 
   operatorNames = [
     'ნინო ბერიძე',
@@ -56,13 +37,7 @@ export class HelpChatComponent {
     'გიგა კახიძე',
   ];
 
-  chat: ChatMessage[] = [
-    {
-      text: 'გამარჯობა! რით შემიძლია დაგეხმარო?',
-      from: 'bot',
-      time: new Date(),
-    },
-  ];
+  chat: ChatMessage[] = [];
 
   userInput = '';
   loading = false;
@@ -74,7 +49,116 @@ export class HelpChatComponent {
   feedbackComment = '';
   feedbackSent = false;
 
-  constructor() {}
+  @Select(LanguageState.getCurrentLanguage)
+  currentLanguage$!: Observable<string>;
+  private languageSubscription?: Subscription;
+
+  constructor(
+    private translate: TranslateService,
+    private store: Store,
+    private cdr: ChangeDetectorRef
+  ) {}
+
+  ngOnInit(): void {
+    const savedLang = localStorage.getItem('language') || 'ka';
+    if (savedLang !== this.translate.currentLang) {
+      this.translate.use(savedLang).subscribe(() => {
+        this.loadTranslations();
+        this.cdr.detectChanges();
+      });
+    } else {
+      this.loadTranslations();
+    }
+    this.translate.onLangChange.subscribe((event) => {
+      this.loadTranslations();
+      this.cdr.detectChanges();
+    });
+    this.languageSubscription = this.currentLanguage$.subscribe(
+      (lang: string) => {
+        if (lang) {
+          if (lang !== this.translate.currentLang) {
+            this.translate.use(lang).subscribe(() => {
+              this.loadTranslations();
+              this.cdr.detectChanges();
+            });
+          } else {
+            this.loadTranslations();
+            this.cdr.detectChanges();
+          }
+        }
+      }
+    );
+  }
+
+  ngOnDestroy(): void {
+    if (this.languageSubscription) {
+      this.languageSubscription.unsubscribe();
+    }
+  }
+
+  loadTranslations(): void {
+    this.translate
+      .get([
+        'HELP_CHAT_QUESTION_1',
+        'HELP_CHAT_ANSWER_1',
+        'HELP_CHAT_QUESTION_2',
+        'HELP_CHAT_ANSWER_2',
+        'HELP_CHAT_QUESTION_3',
+        'HELP_CHAT_ANSWER_3',
+        'HELP_CHAT_QUESTION_4',
+        'HELP_CHAT_ANSWER_4',
+      ])
+      .subscribe((translations: any) => {
+        this.readyQuestions = [
+          {
+            q: translations['HELP_CHAT_QUESTION_1'],
+            a: translations['HELP_CHAT_ANSWER_1'],
+          },
+          {
+            q: translations['HELP_CHAT_QUESTION_2'],
+            a: translations['HELP_CHAT_ANSWER_2'],
+          },
+          {
+            q: translations['HELP_CHAT_QUESTION_3'],
+            a: translations['HELP_CHAT_ANSWER_3'],
+          },
+          {
+            q: translations['HELP_CHAT_QUESTION_4'],
+            a: translations['HELP_CHAT_ANSWER_4'],
+          },
+        ];
+      });
+    this.translate
+      .get([
+        'HELP_CHAT_REPLY_1',
+        'HELP_CHAT_REPLY_2',
+        'HELP_CHAT_REPLY_3',
+        'HELP_CHAT_REPLY_4',
+      ])
+      .subscribe((translations: any) => {
+        this.randomBotReplies = [
+          translations['HELP_CHAT_REPLY_1'],
+          translations['HELP_CHAT_REPLY_2'],
+          translations['HELP_CHAT_REPLY_3'],
+          translations['HELP_CHAT_REPLY_4'],
+        ];
+      });
+    this.translate
+      .get('HELP_CHAT_INITIAL_MESSAGE')
+      .subscribe((text: string) => {
+        if (this.chat.length === 0) {
+          this.chat = [
+            {
+              text: text,
+              from: 'bot',
+              time: new Date(),
+            },
+          ];
+        } else if (this.chat.length > 0 && this.chat[0].from === 'bot') {
+          this.chat[0].text = text;
+        }
+      });
+  }
 
   sendUserMessage() {
     const text = this.userInput.trim();
@@ -158,13 +242,17 @@ export class HelpChatComponent {
   }
 
   resetChat() {
-    this.chat = [
-      {
-        text: 'გამარჯობა! რით შემიძლია დაგეხმარო?',
-        from: 'bot',
-        time: new Date(),
-      },
-    ];
+    this.translate
+      .get('HELP_CHAT_INITIAL_MESSAGE')
+      .subscribe((text: string) => {
+        this.chat = [
+          {
+            text: text,
+            from: 'bot',
+            time: new Date(),
+          },
+        ];
+      });
     this.userInput = '';
     this.headerOperatorName = '';
     this.operatorName = null;

@@ -3,10 +3,10 @@
         <div class="auth-content">
             <div class="toggle-buttons">
                 <button class="toggle-btn" [class.active]="showSignIn" (click)="showSignIn = true">
-                    Sign In
+                    {{ 'AUTH_TAB_SIGNIN' | translate }}
                 </button>
                 <button class="toggle-btn" [class.active]="!showSignIn" (click)="showSignIn = false">
-                    Sign Up
+                    {{ 'AUTH_TAB_SIGNUP' | translate }}
                 </button>
             </div>
 

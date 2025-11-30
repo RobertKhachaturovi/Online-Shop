@@ -1,22 +1,26 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { ToolsService } from '../../tools.service';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
 import { ReceiptModalComponent } from './receipt-modal.component';
-import { Router } from '@angular/router';
 import { PaymentModalComponent } from '../payment-modal/payment-modal.component';
+import { GiftDialogComponent } from '../gift-dialog/gift-dialog.component';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Store } from '@ngxs/store';
+import { LanguageState } from '../../state/language.state';
+import { LanguageRoutingService } from '../../language-routing.service';
 
 @Component({
   selector: 'app-cart',
   standalone: true,
-  imports: [CommonModule, MatIconModule],
+  imports: [CommonModule, MatIconModule, TranslateModule],
   templateUrl: './cart.component.html',
   styleUrls: ['./cart.component.scss'],
 })
-export class CartComponent implements OnInit {
+export class CartComponent implements OnInit, OnDestroy {
   cartItems: any[] = [];
   loading = false;
   error = false;
@@ -32,15 +36,36 @@ export class CartComponent implements OnInit {
   showRemoveAnimation = false;
   showResetAnimation = false;
   confettiPieces: any[] = [];
+  private languageSubscription?: Subscription;
 
   constructor(
     private toolsService: ToolsService,
     private dialog: MatDialog,
-    private router: Router
+    private translate: TranslateService,
+    private store: Store,
+    private cdr: ChangeDetectorRef,
+    private languageRouter: LanguageRoutingService
   ) {}
 
   ngOnInit() {
+    this.translate.onLangChange.subscribe(() => {
+      this.cdr.detectChanges();
+    });
+    this.languageSubscription = this.store
+      .select(LanguageState.getCurrentLanguage)
+      .subscribe((lang: string) => {
+        if (lang && lang !== this.translate.currentLang) {
+          this.translate.use(lang).subscribe(() => {
+            this.cdr.detectChanges();
+          });
+        }
+      });
+
     this.loadCart();
+  }
+
+  ngOnDestroy() {
+    this.languageSubscription?.unsubscribe();
   }
 
   loadCart() {
@@ -54,6 +79,7 @@ export class CartComponent implements OnInit {
           this.cartItems = [];
           this.cartTotal = 0;
           this.loading = false;
+          localStorage.removeItem('cart');
           return;
         }
 
@@ -79,6 +105,7 @@ export class CartComponent implements OnInit {
               return sum + item.quantity * price;
             }, 0);
             this.loading = false;
+            this.persistCartToLocalStorage();
           },
           error: () => {
             this.error = true;
@@ -130,7 +157,7 @@ export class CartComponent implements OnInit {
         }
         this.updateCartTotal();
         console.error('Failed to add to cart:', error);
-        alert('შეცდომა მოხდა კალათაში დამატებისას');
+        alert(this.translate.instant('ERROR_ADDING_TO_CART'));
       },
     });
   }
@@ -175,7 +202,7 @@ export class CartComponent implements OnInit {
         item.quantity = oldQuantity;
         this.updateCartTotal();
         console.error('Failed to update quantity:', error);
-        alert('შეცდომა მოხდა რაოდენობის განახლებისას');
+        alert(this.translate.instant('ERROR_UPDATING_QUANTITY'));
       },
     });
   }
@@ -228,6 +255,17 @@ export class CartComponent implements OnInit {
     this.createConfetti();
 
     const snapshotItems = this.cartItems.map((item) => ({ ...item }));
+    const decrementedSnapshotItems = snapshotItems.map((item: any) => {
+      const currentStock = item.product?.stock ?? 0;
+      const newStock = Math.max(0, currentStock - (item.quantity ?? 0));
+      return {
+        ...item,
+        product: {
+          ...item.product,
+          stock: newStock,
+        },
+      };
+    });
     const snapshotTotal = this.cartTotal;
     const snapshotReceiptNumber = 'INV-' + Date.now();
     const snapshotDate = new Date().toLocaleString('ka-GE');
@@ -237,8 +275,8 @@ export class CartComponent implements OnInit {
         setTimeout(() => {
           this.showCheckoutAnimation = false;
           this.confettiPieces = [];
-          this.openReceiptModal(
-            snapshotItems,
+          this.openGiftDialog(
+            decrementedSnapshotItems,
             snapshotTotal,
             snapshotReceiptNumber,
             snapshotDate
@@ -250,8 +288,42 @@ export class CartComponent implements OnInit {
       error: () => {
         this.showCheckoutAnimation = false;
         this.confettiPieces = [];
-        alert('შეკვეთის გაგზავნისას მოხდა შეცდომა!');
+        alert(this.translate.instant('ERROR_CHECKOUT'));
       },
+    });
+  }
+
+  openGiftDialog(
+    items: any[] = this.cartItems,
+    total: number = this.cartTotal,
+    receiptNumber: string = 'INV-' + Date.now(),
+    currentDate: string = new Date().toLocaleString('ka-GE')
+  ) {
+    this.saveReceiptToHistory(receiptNumber, currentDate, items, total);
+
+    const dialogRef = this.dialog.open(GiftDialogComponent, {
+      width: '500px',
+      disableClose: true,
+    });
+
+    dialogRef.afterClosed().subscribe((giftChoice) => {
+      if (giftChoice === 'yes') {
+        this.languageRouter.navigate(['surprise-toys'], {
+          state: {
+            purchasedItems: items,
+            total,
+            receiptNumber,
+            date: currentDate,
+          },
+        });
+      } else {
+        this.navigateToFinalPresentation(
+          items,
+          total,
+          receiptNumber,
+          currentDate
+        );
+      }
     });
   }
 
@@ -276,7 +348,7 @@ export class CartComponent implements OnInit {
     });
 
     dialogRef.afterClosed().subscribe(() => {
-      this.router.navigate(['/home']);
+      this.languageRouter.navigate(['home']);
     });
   }
 
@@ -286,12 +358,22 @@ export class CartComponent implements OnInit {
     receiptNumber: string = 'INV-' + Date.now(),
     currentDate: string = new Date().toLocaleString('ka-GE')
   ): string {
+    const onlineShop = this.translate.instant('ONLINE_SHOP');
+    const receiptNum = this.translate.instant('RECEIPT_NUMBER');
+    const dateLabel = this.translate.instant('DATE');
+    const quantityLabel = this.translate.instant('QUANTITY');
+    const stockLabel = this.translate.instant('STOCK');
+    const unitPriceLabel = this.translate.instant('UNIT_PRICE');
+    const fullTotalPrice = this.translate.instant('FULL_TOTAL_PRICE');
+    const thankYou = this.translate.instant('THANK_YOU_ORDER');
+    const orderRecorded = this.translate.instant('ORDER_SUCCESSFULLY_RECORDED');
+
     return `
       <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
         <div style="text-align:center; border-bottom:2px solid #007bff; padding-bottom:16px; margin-bottom:16px;">
-          <h1 style="font-size:22px; color:#007bff; margin:0;">🛒 ონლაინ მაღაზია</h1>
-          <div style="font-size:13px; color:#666;">ქვითარი #${receiptNumber}</div>
-          <div style="font-size:13px; color:#666;">თარიღი: ${currentDate}</div>
+          <h1 style="font-size:22px; color:#007bff; margin:0;">${onlineShop}</h1>
+          <div style="font-size:13px; color:#666;">${receiptNum}${receiptNumber}</div>
+          <div style="font-size:13px; color:#666;">${dateLabel} ${currentDate}</div>
         </div>
         <div>
           ${items
@@ -305,11 +387,11 @@ export class CartComponent implements OnInit {
                 }" style="width:80px; height:80px; object-fit:cover; border-radius:8px; margin-right:15px; border:2px solid #e0e0e0; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
                 <div>
                   <div style="font-weight:bold;">${item.product?.title}</div>
-                  <div style="font-size:12px; color:#666;">რაოდენობა: ${
-                    item.quantity
-                  } | მარაგი: ${
+                  <div style="font-size:12px; color:#666;">${quantityLabel} ${
+                item.quantity
+              } | ${stockLabel} ${
                 item.product?.stock || 'N/A'
-              } | ერთეულის ფასი: ${
+              } | ${unitPriceLabel} ${
                 item.product?.price?.current ??
                 item.product?.price ??
                 item.price?.current ??
@@ -318,7 +400,7 @@ export class CartComponent implements OnInit {
               } ₾</div>
                 </div>
               </div>
-              <div style="font-weight:bold; color:#007ბff;">${(
+              <div style="font-weight:bold; color:#007bff;">${(
                 item.quantity *
                 (item.product?.price?.current ??
                   item.product?.price ??
@@ -331,13 +413,13 @@ export class CartComponent implements OnInit {
             )
             .join('')}
         </div>
-        <div style="border-top:2pxsolid #007bff; padding-top:16px; margin-top:16px; text-align:right; font-size:16px; font-weight:bold;">
-          სრული ჯამური ფასი: ${total.toFixed(2)} ₾
+        <div style="border-top:2px solid #007bff; padding-top:16px; margin-top:16px; text-align:right; font-size:16px; font-weight:bold;">
+          ${fullTotalPrice} ${total.toFixed(2)} ₾
         </div>
         <div style="text-align:center; margin-top:24px; color:#666; font-size:12px;">
-          <p>გმადლობთ შეკვეთისთვის! 🎉</p>
-          <p>თქვენი შეკვეთა წარმატებით დაფიქსირდა</p>
-          <p>ქვითარი #${receiptNumber}</p>
+          <p>${thankYou}</p>
+          <p>${orderRecorded}</p>
+          <p>${receiptNum}${receiptNumber}</p>
         </div>
       </div>
     `;
@@ -382,11 +464,14 @@ export class CartComponent implements OnInit {
     const receiptHtml = this.generateReceiptHtml();
     const printWindow = window.open('', '_blank', 'width=600,height=800');
     if (!printWindow) {
-      alert('გთხოვთ დაუშვათ პოპ-აპები');
+      alert(this.translate.instant('ALLOW_POPUPS'));
       return;
     }
+    const receiptTitle = this.translate.instant('RECEIPT');
     printWindow.document.write(
-      '<html><head><title>ქვითარი</title></head><body>' +
+      '<html><head><title>' +
+        receiptTitle +
+        '</title></head><body>' +
         receiptHtml +
         '</body></html>'
     );
@@ -426,6 +511,7 @@ export class CartComponent implements OnInit {
         0;
       return sum + item.quantity * price;
     }, 0);
+    this.persistCartToLocalStorage();
   }
 
   closeRemoveAnimation() {
@@ -434,5 +520,45 @@ export class CartComponent implements OnInit {
 
   closeResetAnimation() {
     this.showResetAnimation = false;
+  }
+
+  private persistCartToLocalStorage() {
+    try {
+      if (!this.cartItems || this.cartItems.length === 0) {
+        localStorage.removeItem('cart');
+        return;
+      }
+      const simplified = this.cartItems.map((item: any) => ({
+        title: item.product?.title,
+        quantity: item.quantity,
+        price:
+          item.product?.price?.current ??
+          item.product?.price ??
+          item.price?.current ??
+          item.price ??
+          0,
+        image: item.product?.images?.[0] || null,
+        stock: item.product?.stock ?? null,
+      }));
+      localStorage.setItem('cart', JSON.stringify(simplified));
+    } catch (e) {
+      console.warn('Failed to persist cart to localStorage', e);
+    }
+  }
+
+  private navigateToFinalPresentation(
+    items: any[],
+    total: number,
+    receiptNumber: string,
+    date: string
+  ) {
+    this.languageRouter.navigate(['final-presentation'], {
+      state: {
+        purchasedItems: items,
+        total,
+        receiptNumber,
+        date,
+      },
+    });
   }
 }

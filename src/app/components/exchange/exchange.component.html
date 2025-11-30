@@ -1,0 +1,31 @@
+<div class="currency-exchange">
+    <h3>{{ 'CURRENCY.TITLE' | translate }}</h3>
+
+    <div class="exchange-input">
+
+        <label>{{ 'CURRENCY.AMOUNT' | translate }}</label>
+        <input type="number" [(ngModel)]="amount" [placeholder]="'CURRENCY.ENTER_AMOUNT' | translate" min="0"
+            (focus)="onInputFocus()" (input)="convertCurrency()" />
+
+        <label>{{ 'CURRENCY.FROM' | translate }}</label>
+        <select [(ngModel)]="fromCurrency" (change)="convertCurrency()">
+            <option *ngFor="let cur of currencies" [value]="cur">
+                {{ cur }}
+            </option>
+        </select>
+
+        <label>{{ 'CURRENCY.TO' | translate }}</label>
+        <select [(ngModel)]="toCurrency" (change)="convertCurrency()">
+            <option *ngFor="let cur of currencies" [value]="cur">
+                {{ cur }}
+            </option>
+        </select>
+    </div>
+
+    <div class="exchange-results" *ngIf="convertedAmount !== null">
+        <p>
+            {{ 'CURRENCY.RESULT' | translate:{ amount: amount, from: fromCurrency, converted: convertedAmount, to:
+            toCurrency } }}
+        </p>
+    </div>
+</div>

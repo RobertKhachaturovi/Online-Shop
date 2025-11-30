@@ -1,0 +1,86 @@
+<button class="best-btn" (click)="checkBestProduct()">{{ 'COMPARE_WHICH_IS_BETTER' | translate }}</button>
+
+<div class="compare-header">
+
+    <button class="reset-btn" (click)="resetCompare()">
+        {{ 'COMPARE_RESET' | translate }}
+    </button>
+</div>
+<div *ngIf="comparisonTable.length > 0" class="comparison-table-wrapper">
+    <h3>{{ 'COMPARE_RESULTS' | translate }}</h3>
+
+    <table class="comparison-table">
+        <thead>
+            <tr>
+                <th>{{ 'COMPARE_PRODUCT' | translate }}</th>
+                <th>{{ 'COMPARE_PRICE' | translate }}</th>
+                <th>{{ 'COMPARE_RATING' | translate }}</th>
+                <th>{{ 'COMPARE_BEST' | translate }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let row of comparisonTable" [class.best-row]="row.isBest">
+                <td>
+                    <div class="product-title-with-btn">
+                        <span>{{ row.title }}</span>
+                        <button class="view-product-btn" (click)="goToProductDetail(row.id)"
+                            [attr.aria-label]="'COMPARE_VIEW_PRODUCT' | translate">
+                            <mat-icon>visibility</mat-icon>
+                        </button>
+                    </div>
+                </td>
+                <td>{{ row.price }}</td>
+                <td>{{ row.rating }}</td>
+                <td>{{ row.isBest ? ('COMPARE_BEST_LABEL' | translate) : '' }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="compare-container">
+    <div class="compare-list">
+        <div class="compare-item" *ngFor="let product of items; let i = index" [class.best-product]="bestIndex === i"
+            role="group" aria-label="Product comparison card">
+            <div *ngIf="bestIndex === i" class="best-badge" aria-hidden="true">
+                {{ 'COMPARE_BEST_LABEL' | translate }}
+            </div>
+
+            <div class="product-title-with-btn">
+                <h4>{{ product.title }}</h4>
+                <button class="view-product-btn" (click)="goToProductDetail(product._id || product.id)"
+                    [attr.aria-label]="'COMPARE_VIEW_PRODUCT' | translate">
+                    <mat-icon>visibility</mat-icon>
+                </button>
+            </div>
+            <img [src]="product.thumbnail || product.images?.[0] || 'assets/placeholder.png'" [alt]="product.title" />
+
+            <div class="product-info-row">
+                <p>
+                    <strong>{{ 'COMPARE_PRICE_LABEL' | translate }}:</strong>
+                    {{ product.price?.current || product.price | currency:'':false }}
+                </p>
+            </div>
+
+            <div class="product-info-row">
+                <p><strong>{{ 'COMPARE_RATING_LABEL' | translate }}:</strong> {{ product.rating ?? '—' }}</p>
+            </div>
+
+            <div class="product-info-row desc">
+                <p><strong>{{ 'COMPARE_DESCRIPTION_LABEL' | translate }}:</strong> {{ product.description }}</p>
+            </div>
+
+            <div class="card-actions">
+                <button class="delete-btn" (click)="removeProduct(i)" [attr.aria-label]="'COMPARE_DELETE' | translate">
+                    {{ 'COMPARE_DELETE' | translate }}
+                </button>
+            </div>
+        </div>
+        <div *ngIf="items.length === 0" class="empty-message">
+            {{ 'COMPARE_NO_PRODUCTS_SELECTED' | translate }}
+        </div>
+        <div class="extra-slot" role="button" tabindex="0" (click)="goToHome()" (keydown.enter)="goToHome()">
+            <span>{{ 'COMPARE_ADD_PRODUCT' | translate }}</span>
+            <button aria-hidden="true">{{ 'COMPARE_ADD' | translate }}</button>
+        </div>
+    </div>
+</div>

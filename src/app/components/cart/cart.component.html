@@ -7,8 +7,8 @@
         </div>
         <div class="checkout-text">
             <mat-icon>shopping_bag</mat-icon>
-            <span>Order Placed!</span>
-            <div class="subtitle">Your order has been successfully submitted</div>
+            <span>{{ 'ORDER_PLACED' | translate }}</span>
+            <div class="subtitle">{{ 'ORDER_SUBMITTED' | translate }}</div>
         </div>
         <div class="checkout-confetti">
             <div class="confetti-piece" *ngFor="let piece of confettiPieces" [style.--color]="piece.color"
@@ -27,8 +27,8 @@
         </div>
         <div class="remove-text">
             <mat-icon>delete_forever</mat-icon>
-            <span>Item Removed!</span>
-            <div class="subtitle">Product has been removed from cart</div>
+            <span>{{ 'ITEM_REMOVED' | translate }}</span>
+            <div class="subtitle">{{ 'PRODUCT_REMOVED' | translate }}</div>
         </div>
     </div>
 </div>
@@ -41,25 +41,25 @@
         </div>
         <div class="reset-text">
             <mat-icon>clear_all</mat-icon>
-            <span>Cart Cleared!</span>
-            <div class="subtitle">All items have been removed</div>
+            <span>{{ 'CART_CLEARED' | translate }}</span>
+            <div class="subtitle">{{ 'ALL_ITEMS_REMOVED' | translate }}</div>
         </div>
     </div>
 </div>
 
-<div *ngIf="cartItems && cartItems.length > 0">
+    <div *ngIf="cartItems && cartItems.length > 0">
     <div class="cart-container">
-        <h2>Cart</h2>
+        <h2>{{ 'CART_TITLE' | translate }}</h2>
         <ul>
             <li *ngFor="let item of cartItems" class="cart-item">
 
                 <img [src]="item.product?.images?.[0] || 'https://via.placeholder.com/60x60?text=No+Image'"
-                    [alt]="item.product?.title || 'პროდუქტის სურათი არ არის'"
+                    [alt]="item.product?.title || ('PRODUCT_IMAGE_NOT_AVAILABLE' | translate)"
                     style="font-size: 10px;  text-align: center;" class="cart-img" />
 
                 <div>
                     <div class="cart-model">
-                        <span class="cart-model-label">მოდელი:</span>
+                        <span class="cart-model-label">{{ 'MODEL' | translate }}</span>
                         <span class="cart-model-value">{{ item.product?.title }}</span>
                     </div>
                     <div class="cart-qty-control">
@@ -69,34 +69,34 @@
                         <button class="qty-btn" (click)="updateCartQuantity(item, item.quantity + 1)">+</button>
                     </div>
                     <div class="cart-qty">
-                        ერთეულის ფასი: {{ item.product?.price?.current || item.product?.price }} ₾
+                        {{ 'UNIT_PRICE' | translate }} {{ item.product?.price?.current || item.product?.price }} ₾
                     </div>
                     <div class="cart-total">
-                        ჯამური ფასი: {{ (item.quantity * (item.product?.price?.current || item.product?.price)) |
+                        {{ 'TOTAL_PRICE' | translate }} {{ (item.quantity * (item.product?.price?.current || item.product?.price)) |
                         number:'1.0-0' }} ₾
                     </div>
                 </div>
-                <button (click)="removeFromCart(item.product)">Remove</button>
+                <button (click)="removeFromCart(item.product)">{{ 'REMOVE' | translate }}</button>
             </li>
         </ul>
 
         <div class="cart-summary">
-            <span>სრული ჯამური ფასი:</span>
+            <span>{{ 'FULL_TOTAL_PRICE' | translate }}</span>
             <span class="cart-summary-total">{{ cartTotal | number:'1.0-0' }} ₾</span>
         </div>
 
-        <button class="reset-cart-btn" (click)="resetCart()">Reset Cart</button>
-        <button class="checkout-btn" (click)="openPaymentModal()" [disabled]="!cartItems.length">Check Out</button>
+        <button class="reset-cart-btn" (click)="resetCart()">{{ 'RESET_CART' | translate }}</button>
+        <button class="checkout-btn" (click)="openPaymentModal()" [disabled]="!cartItems.length">{{ 'CHECK_OUT' | translate }}</button>
 
-        <button class="print-receipt-btn" (click)="printReceipt()" [disabled]="!cartItems.length">Print Receipt</button>
+        <button class="print-receipt-btn" (click)="printReceipt()" [disabled]="!cartItems.length">{{ 'PRINT_RECEIPT' | translate }}</button>
     </div>
 </div>
 <div *ngIf="loading" class="loading-container">
     <div class="spinner"></div>
-    <p>იტვირთება...</p>
+    <p>{{ 'LOADING' | translate }}</p>
 </div>
 
 <div *ngIf="!loading && cartItems && cartItems.length === 0" class="cart-empty-block">
     <img src="https://cdn-icons-png.flaticon.com/512/11329/11329060.png" alt="Empty cart" class="cart-empty-img" />
-    <div class="cart-empty-text">Your cart is <span class="cart-empty-red">Empty</span></div>
+    <div class="cart-empty-text">{{ 'CART_EMPTY' | translate }} <span class="cart-empty-red">{{ 'CART_EMPTY_RED' | translate }}</span></div>
 </div>

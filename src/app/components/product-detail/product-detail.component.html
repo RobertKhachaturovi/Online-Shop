@@ -1,13 +1,13 @@
 <div class="product-detail-container">
     <div class="loading-container" *ngIf="loading">
         <div class="loading-spinner"></div>
-        <p>Loading product details...</p>
+        <p>{{ 'LOADING_PRODUCT' | translate }}</p>
     </div>
     <div class="error-container" *ngIf="error">
         <mat-icon>error</mat-icon>
-        <h2>Error loading product</h2>
-        <p>Something went wrong. Please try again.</p>
-        <button mat-raised-button color="primary" (click)="goBack()">Go Back</button>
+        <h2>{{ 'ERROR_LOADING' | translate }}</h2>
+        <p>{{ 'SOMETHING_WENT_WRONG' | translate }}</p>
+        <button mat-raised-button color="primary" (click)="goBack()">{{ 'GO_BACK' | translate }}</button>
     </div>
     <div class="product-detail-content" *ngIf="!loading && !error && product">
 
@@ -56,8 +56,7 @@
                                 }}</span>
                             <span class="new-price">{{ product.price.current }} {{ product.price.currency }}</span>
                         </div>
-                        <div class="discount-info">Save {{ product.price.beforeDiscount - product.price.current }} {{
-                            product.price.currency }}</div>
+                        <div class="discount-info">{{ 'SAVE' | translate: {amount: product.price.beforeDiscount - product.price.current, currency: product.price.currency} }}</div>
                     </ng-container>
                     <ng-template #noDiscount>
                         <div class="price-row">
@@ -69,10 +68,10 @@
                 <div class="stock-status" [class.in-stock]="isInStock()" [class.out-of-stock]="!isInStock()">
                     <span [ngClass]="isInStock() ? 'stock-green-underline' : 'stock-red-underline'">
                         <ng-container *ngIf="isInStock()">
-                            {{ product.stock }} in stock
+                            {{ product.stock }} {{ 'IN_STOCK_DETAIL' | translate }}
                         </ng-container>
                         <ng-container *ngIf="!isInStock()">
-                            {{ product.stock }} not in stock
+                            {{ product.stock }} {{ 'NOT_IN_STOCK_DETAIL' | translate }}
                         </ng-container>
                     </span>
                     <mat-icon>{{ isInStock() ? 'check_circle' : 'cancel' }}</mat-icon>
@@ -80,49 +79,49 @@
                 <div class="rating-section">
                     <button mat-raised-button color="accent" class="rating-btn" (click)="openRatingModal()">
                         <mat-icon>star_rate</mat-icon>
-                        შეფასება
+                        {{ 'RATING' | translate }}
                     </button>
                 </div>
                 <div class="add-to-cart-section">
                     <button mat-raised-button color="primary" class="add-to-cart-btn" [disabled]="!isInStock()"
                         (click)="addToCart(product._id)">
                         <mat-icon>shopping_cart</mat-icon>
-                        Add to Cart
+                        {{ 'ADD_TO_CART' | translate }}
                     </button>
                 </div>
                 <div class="product-description-section">
                     <section class="guests-section">
-                        <h2 class="guests-favorite">DESCRIPTION</h2>
+                        <h2 class="guests-favorite">{{ 'DESCRIPTION' | translate }}</h2>
                     </section>
                     <div class="description-content">
-                        <p>{{ product.description || 'აღწერა არ არის ხელმისაწვდომი' }}</p>
+                        <p>{{ product.description || ('NO_DESCRIPTION_AVAILABLE' | translate) }}</p>
                     </div>
                 </div>
                 <div class="features-section">
                     <div class="feature">
                         <mat-icon>verified</mat-icon>
-                        <span>2 Year full warranty</span>
+                        <span>{{ 'WARRANTY' | translate }}</span>
                     </div>
                     <div class="feature">
                         <mat-icon>security</mat-icon>
-                        <span>Secure payment</span>
+                        <span>{{ 'SECURE_PAYMENT' | translate }}</span>
                     </div>
                     <div class="feature">
                         <mat-icon>local_shipping</mat-icon>
-                        <span>Worldwide shipping</span>
+                        <span>{{ 'WORLDWIDE_SHIPPING' | translate }}</span>
                     </div>
                 </div>
                 <div class="product-details">
                     <div class="detail-row">
-                        <span class="detail-label">Category:</span>
+                        <span class="detail-label">{{ 'CATEGORY' | translate }}</span>
                         <span class="detail-value">{{ product.category?.name }}</span>
                     </div>
                     <div class="detail-row">
-                        <span class="detail-label">Brand:</span>
+                        <span class="detail-label">{{ 'BRAND' | translate }}</span>
                         <span class="detail-value">{{ product.brand }}</span>
                     </div>
                     <div class="detail-row" *ngIf="product.issueDate">
-                        <span class="detail-label">Issue Date:</span>
+                        <span class="detail-label">{{ 'ISSUE_DATE' | translate }}</span>
                         <span class="detail-value">{{ product.issueDate | date:'yyyy-MM-dd' }}</span>
                     </div>
                 </div>
@@ -130,17 +129,17 @@
         </div>
         <div class="tabs-section">
             <mat-tab-group (selectedTabChange)="onTabChange($event)" [selectedIndex]="selectedTabIndex">
-                <mat-tab label="შეფასებები">
+                <mat-tab [label]="'REVIEWS' | translate">
                     <div class="tab-content">
 
 
                         <div class="reviews-section">
                             <div class="reviews-header">
-                                <h2>შეფასებები ({{ reviews.length }})</h2>
+                                <h2>{{ 'REVIEWS_COUNT' | translate: {count: reviews.length} }}</h2>
                                 <button mat-raised-button color="primary" class="add-review-btn"
                                     (click)="openRatingModal()">
                                     <mat-icon>add</mat-icon>
-                                    შეფასების დამატება
+                                    {{ 'ADD_REVIEW' | translate }}
                                 </button>
                             </div>
 
@@ -164,7 +163,7 @@
                                                 <span class="rating-value">{{ review.rating }}</span>
                                             </div>
                                             <button class="delete-review-btn" (click)="deleteReview(review.id)"
-                                                title="შეფასების წაშლა">
+                                                [title]="'DELETE_REVIEW' | translate">
                                                 <mat-icon>delete</mat-icon>
                                             </button>
                                         </div>
@@ -175,12 +174,12 @@
                                 </div>
                             </div>
                             <div class="no-reviews-message" *ngIf="reviews.length === 0">
-                                <p>ჯერ არ არის შეფასებები. დაამატე პირველი შეფასება!</p>
+                                <p>{{ 'NO_REVIEWS' | translate }}</p>
                             </div>
                             <div class="back-button-container">
                                 <button class="back-button" (click)="goBack()">
                                     <mat-icon>arrow_back</mat-icon>
-                                    Back to Products
+                                    {{ 'BACK_TO_PRODUCTS' | translate }}
                                 </button>
                             </div>
                         </div>
@@ -199,16 +198,18 @@
                     alt="Cart Animation" />
             </div>
             <div class="animation-text">
+
+                <span>{{ 'ADDED_TO_CART_SUCCESS' | translate }}</span>
                 <mat-icon>check_circle</mat-icon>
-                <span>Added to Cart!</span>
-                <div class="subtitle">Your item has been successfully added</div>
+                <div class="subtitle">{{ 'ITEM_ADDED_SUCCESS' | translate }}</div>
             </div>
+
         </div>
     </div>
     <div class="rating-modal-overlay" *ngIf="showRatingModal" (click)="closeRatingModal()">
         <div class="rating-modal-container" (click)="$event.stopPropagation()">
             <div class="rating-modal-header">
-                <h2>შეფასების დამატება</h2>
+                <h2>{{ 'ADD_RATING' | translate }}</h2>
                 <button class="close-btn" (click)="closeRatingModal()">
                     <mat-icon>close</mat-icon>
                 </button>
@@ -216,37 +217,37 @@
 
             <div class="rating-modal-content">
                 <div class="rating-stars-section">
-                    <h3>რეიტინგი</h3>
+                    <h3>{{ 'RATING_LABEL' | translate }}</h3>
                     <div class="rating-stars">
                         <span class="star" *ngFor="let star of [1,2,3,4,5]" (click)="setRating(star)">
                             <mat-icon [ngClass]="{'filled': star <= rating}">
                                 {{ star <= rating ? 'star' : 'star_border' }} </mat-icon>
                         </span>
                     </div>
-                    <p class="rating-text" *ngIf="rating > 0">{{ rating }} ვარსკვლავი</p>
+                    <p class="rating-text" *ngIf="rating > 0">{{ rating }} {{ 'STARS' | translate }}</p>
                 </div>
 
                 <div class="reviewer-info-section">
                     <mat-form-field appearance="outline" class="full-width">
-                        <mat-label>სახელი</mat-label>
-                        <input matInput [(ngModel)]="reviewerName" placeholder="შეიყვანეთ თქვენი სახელი">
+                        <mat-label>{{ 'FIRST_NAME' | translate }}</mat-label>
+                        <input matInput [(ngModel)]="reviewerName" [placeholder]="'ENTER_FIRST_NAME' | translate">
                     </mat-form-field>
 
                     <mat-form-field appearance="outline" class="full-width">
-                        <mat-label>გვარი</mat-label>
-                        <input matInput [(ngModel)]="reviewerLastName" placeholder="შეიყვანეთ თქვენი გვარი">
+                        <mat-label>{{ 'LAST_NAME' | translate }}</mat-label>
+                        <input matInput [(ngModel)]="reviewerLastName" [placeholder]="'ENTER_LAST_NAME' | translate">
                     </mat-form-field>
 
                     <mat-form-field appearance="outline" class="full-width">
-                        <mat-label>შეფასების კომენტარი</mat-label>
-                        <textarea matInput [(ngModel)]="reviewComment" placeholder="დაწერეთ თქვენი შეფასება"
+                        <mat-label>{{ 'REVIEW_COMMENT' | translate }}</mat-label>
+                        <textarea matInput [(ngModel)]="reviewComment" [placeholder]="'WRITE_REVIEW' | translate"
                             rows="3"></textarea>
                     </mat-form-field>
                 </div>
 
                 <div class="rating-modal-actions">
-                    <button mat-button (click)="closeRatingModal()">გაუქმება</button>
-                    <button mat-raised-button color="primary" (click)="submitRating()">OK</button>
+                    <button mat-button (click)="closeRatingModal()">{{ 'CANCEL' | translate }}</button>
+                    <button mat-raised-button color="primary" (click)="submitRating()">{{ 'OK' | translate }}</button>
                 </div>
             </div>
         </div>

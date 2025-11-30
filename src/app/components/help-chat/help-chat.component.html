@@ -6,16 +6,16 @@
         <div class="chat-title">
             <ng-container *ngIf="headerOperatorName; else searchingHeader">
                 {{ headerOperatorName }}
-                <div class="chat-operator-label">ოპერატორი</div>
+                <div class="chat-operator-label">{{ 'HELP_CHAT_OPERATOR' | translate }}</div>
             </ng-container>
             <ng-template #searchingHeader>
-                ოპერატორი ეძებს...
+                {{ 'HELP_CHAT_SEARCHING' | translate }}
             </ng-template>
         </div>
     </div>
 
     <div class="ready-questions">
-        <span>მზა კითხვები:</span>
+        <span>{{ 'HELP_CHAT_READY_QUESTIONS' | translate }}</span>
         <button *ngFor="let q of readyQuestions" (click)="askReadyQuestion(q.q)">
             {{ q.q }}
         </button>
@@ -34,50 +34,50 @@
 
         <div *ngIf="loading" class="chat-loading-row">
             <span class="chat-spinner"></span>
-            <span class="chat-loading-text">ოპერატორი ეძებს პასუხს...</span>
+            <span class="chat-loading-text">{{ 'HELP_CHAT_SEARCHING_ANSWER' | translate }}</span>
         </div>
 
         <div *ngIf="!loading && operatorName" class="chat-operator-row">
             <mat-icon style="vertical-align: middle; color: #1976d2;">person</mat-icon>
-            <span class="chat-operator-name">{{ operatorName }} პასუხობს...</span>
+            <span class="chat-operator-name">{{ operatorName }} {{ 'HELP_CHAT_RESPONDING' | translate }}</span>
         </div>
     </div>
 
     <form (ngSubmit)="sendUserMessage()" class="input-row">
-        <input type="text" [(ngModel)]="userInput" name="userInput" placeholder="ჩაწერე კითხვა..." autocomplete="off" />
-        <button type="submit">გაგზავნა</button>
+        <input type="text" [(ngModel)]="userInput" name="userInput" [placeholder]="'HELP_CHAT_ENTER_QUESTION' | translate" autocomplete="off" />
+        <button type="submit">{{ 'HELP_CHAT_SEND' | translate }}</button>
     </form>
-    <button class="close-chat-btn" (click)="openFeedbackModal()">ჩათის დახურვა</button>
+    <button class="close-chat-btn" (click)="openFeedbackModal()">{{ 'HELP_CHAT_CLOSE' | translate }}</button>
 
 
     <div class="feedback-modal-overlay" *ngIf="feedbackModalOpen">
         <div class="feedback-modal">
-            <div class="feedback-title">How would you rate the support you received?</div>
+            <div class="feedback-title">{{ 'HELP_CHAT_FEEDBACK_TITLE' | translate }}</div>
             <div class="feedback-rating-row">
                 <button type="button" [class.selected]="feedbackRating === 1" (click)="setFeedbackRating(1)">
-                    <span class="emoji">😠</span> Very Bad
+                    <span class="emoji">😠</span> {{ 'HELP_CHAT_FEEDBACK_VERY_BAD' | translate }}
                 </button>
                 <button type="button" [class.selected]="feedbackRating === 2" (click)="setFeedbackRating(2)">
-                    <span class="emoji">🙁</span> Bad
+                    <span class="emoji">🙁</span> {{ 'HELP_CHAT_FEEDBACK_BAD' | translate }}
                 </button>
                 <button type="button" [class.selected]="feedbackRating === 3" (click)="setFeedbackRating(3)">
-                    <span class="emoji">😐</span> Average
+                    <span class="emoji">😐</span> {{ 'HELP_CHAT_FEEDBACK_AVERAGE' | translate }}
                 </button>
                 <button type="button" [class.selected]="feedbackRating === 4" (click)="setFeedbackRating(4)">
-                    <span class="emoji">🙂</span> Good
+                    <span class="emoji">🙂</span> {{ 'HELP_CHAT_FEEDBACK_GOOD' | translate }}
                 </button>
                 <button type="button" [class.selected]="feedbackRating === 5" (click)="setFeedbackRating(5)">
-                    <span class="emoji">🤩</span> Loved
+                    <span class="emoji">🤩</span> {{ 'HELP_CHAT_FEEDBACK_LOVED' | translate }}
                 </button>
             </div>
 
-            <textarea [(ngModel)]="feedbackComment" placeholder="Your message here ..." rows="3"></textarea>
+            <textarea [(ngModel)]="feedbackComment" [placeholder]="'HELP_CHAT_FEEDBACK_PLACEHOLDER' | translate" rows="3"></textarea>
             <div class="feedback-actions">
                 <button type="button" class="send-btn" (click)="sendFeedback()"
-                    [disabled]="!feedbackRating || feedbackSent">Send</button>
-                <button type="button" class="home-btn" (click)="goToHome()">Back to home page</button>
+                    [disabled]="!feedbackRating || feedbackSent">{{ 'HELP_CHAT_FEEDBACK_SEND' | translate }}</button>
+                <button type="button" class="home-btn" (click)="goToHome()">{{ 'HELP_CHAT_FEEDBACK_BACK_HOME' | translate }}</button>
             </div>
-            <div class="feedback-thankyou" *ngIf="feedbackSent">Thank you for your feedback!</div>
+            <div class="feedback-thankyou" *ngIf="feedbackSent">{{ 'HELP_CHAT_FEEDBACK_THANK_YOU' | translate }}</div>
             <button class="feedback-close" (click)="closeFeedbackModal()">×</button>
         </div>
     </div>

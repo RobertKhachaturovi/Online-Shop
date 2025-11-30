@@ -1,17 +1,24 @@
 <form class="form" [formGroup]="formInfo" (ngSubmit)="login()">
-    <p class="title">Login</p>
-    <p class="message">Sign in to your account to continue.</p>
+    <p class="title">{{ 'SIGNIN_TITLE' | translate }}</p>
+    <p class="message">{{ 'SIGNIN_MESSAGE' | translate }}</p>
 
     <label>
-        <input required="" placeholder="" type="email" class="input" formControlName="email">
-        <span>Email</span>
+        <input required placeholder="" type="email" class="input" formControlName="email">
+        <span>{{ 'SIGNIN_EMAIL' | translate }}</span>
     </label>
 
     <label>
-        <input required="" placeholder="" type="password" class="input" formControlName="password">
-        <span>Password</span>
+        <input required placeholder="" type="password" class="input" formControlName="password">
+        <span>{{ 'SIGNIN_PASSWORD' | translate }}</span>
     </label>
 
-    <button class="submit" type="submit">Sign In</button>
+    <button class="submit" type="submit">{{ 'SIGNIN_BUTTON' | translate }}</button>
 
+    <div *ngIf="feedbackMessage" [ngClass]="{
+         'feedback': true,
+         'success': feedbackType === 'success',
+         'error': feedbackType === 'error'
+       }">
+        {{ feedbackMessage }}
+    </div>
 </form>

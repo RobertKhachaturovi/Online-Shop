@@ -1,0 +1,15 @@
+<h2 mat-dialog-title>{{ 'GIFT_TITLE' | translate }}</h2>
+
+<mat-dialog-content>
+    <p>{{ 'GIFT_TEXT' | translate }}</p>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+    <button mat-button (click)="close('no')">
+        {{ 'GIFT_NO' | translate }}
+    </button>
+
+    <button mat-flat-button color="primary" (click)="close('yes')">
+        {{ 'GIFT_YES' | translate }}
+    </button>
+</mat-dialog-actions>

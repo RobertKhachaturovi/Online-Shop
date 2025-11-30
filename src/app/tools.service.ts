@@ -251,7 +251,7 @@ export class ToolsService {
   }
 
   getBrands(): Observable<string[]> {
-    return this.http.get<string[]>(`${this.API}/shop/brands`);
+    return this.http.get<string[]>(`${this.API}/shop/products/brands`);
   }
 
   addToCart(productId: string, quantity: number = 1): Observable<any> {
@@ -259,7 +259,7 @@ export class ToolsService {
       .post(
         `${this.API}/shop/cart/product`,
         { id: productId, quantity },
-        { headers: this.getAuthHeaders() }
+        { headers: this.getAuthHeaders() } // <- აქ იგზავნება ტოკენი
       )
       .pipe(
         catchError((err) => {

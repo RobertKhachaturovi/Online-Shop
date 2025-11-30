@@ -1,0 +1,357 @@
+.final-presentation-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+  position: relative;
+  overflow-x: hidden;
+  margin-top: 90px;
+}
+
+.confetti-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.confetti-piece {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: var(--color);
+  animation: confetti-fall 3s linear infinite;
+  animation-delay: var(--delay);
+  left: var(--left);
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-100vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.presentation-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  animation: slideUp 0.8s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.header {
+  background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+  color: white;
+  padding: 40px;
+  text-align: center;
+}
+
+.header h1 {
+  font-size: 2.5rem;
+  margin: 0 0 10px 0;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.header p {
+  font-size: 1.2rem;
+  margin: 0;
+  opacity: 0.9;
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  padding: 40px;
+}
+
+@media (max-width: 768px) {
+  .products-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 20px;
+  }
+}
+
+.purchased-products {
+  background: #f8f9fa;
+  border-radius: 15px;
+  padding: 25px;
+  border: 2px solid #e9ecef;
+}
+
+.purchased-products h2 {
+  color: #495057;
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+}
+
+.product-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.product-item {
+  display: flex;
+  align-items: center;
+  background: white;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.product-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.product-image {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-right: 15px;
+  border: 2px solid #e9ecef;
+}
+
+.product-details h3 {
+  margin: 0 0 5px 0;
+  color: #495057;
+  font-size: 1.1rem;
+}
+
+.quantity {
+  margin: 0 0 5px 0;
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.price {
+  margin: 0;
+  color: #28a745;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+.unit-price {
+  margin: 0;
+  color: #007bff;
+  font-size: 0.9rem;
+}
+
+.gift-product {
+  background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
+  border-radius: 15px;
+  padding: 25px;
+  border: 2px solid #fdcb6e;
+  position: relative;
+  overflow: hidden;
+}
+
+.gift-product::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 70%
+  );
+  animation: sparkle 3s ease-in-out infinite;
+}
+
+@keyframes sparkle {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.1);
+  }
+}
+
+.gift-product h2 {
+  color: #d63031;
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.gift-container {
+  display: flex;
+  align-items: center;
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.gift-image {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-right: 20px;
+  border: 3px solid #ff6b6b;
+  box-shadow: 0 4px 8px rgba(255, 107, 107, 0.3);
+}
+
+.gift-details h3 {
+  margin: 0 0 10px 0;
+  color: #d63031;
+  font-size: 1.2rem;
+}
+
+.voice-message {
+  margin: 15px 0;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #ff6b6b;
+}
+
+.message-label {
+  margin: 0 0 5px 0;
+  font-weight: bold;
+  color: #495057;
+  font-size: 0.9rem;
+}
+
+.message-text {
+  margin: 0;
+  color: #6c757d;
+  font-style: italic;
+}
+
+.gift-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #00b894, #00cec9);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 8px rgba(0, 184, 148, 0.3);
+}
+
+.summary-section {
+  padding: 0 40px 20px;
+}
+
+.summary-card {
+  background: linear-gradient(135deg, #74b9ff, #0984e3);
+  color: white;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 8px 20px rgba(116, 185, 255, 0.3);
+}
+
+.summary-card h3 {
+  margin: 0 0 15px 0;
+  font-size: 1.3rem;
+}
+
+.summary-details p {
+  margin: 8px 0;
+  font-size: 1rem;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding: 30px 40px;
+  background: #f8f9fa;
+}
+
+.print-btn,
+.home-btn {
+  padding: 15px 30px;
+  border: none;
+  border-radius: 25px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.print-btn {
+  background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+  color: white;
+}
+
+.print-btn:hover {
+  background: linear-gradient(135deg, #5f3dc4, #9775fa);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(108, 92, 231, 0.3);
+}
+
+.home-btn {
+  background: linear-gradient(135deg, #00b894, #00cec9);
+  color: white;
+}
+
+.home-btn:hover {
+  background: linear-gradient(135deg, #00a085, #00b7b3);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 184, 148, 0.3);
+}
+
+@media (max-width: 768px) {
+  .header {
+    padding: 20px;
+  }
+
+  .header h1 {
+    font-size: 1.8rem;
+  }
+
+  .header p {
+    font-size: 1rem;
+  }
+
+  .products-grid {
+    padding: 20px;
+  }
+
+  .summary-section {
+    padding: 0 20px 20px;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    padding: 20px;
+  }
+
+  .print-btn,
+  .home-btn {
+    width: 100%;
+  }
+}

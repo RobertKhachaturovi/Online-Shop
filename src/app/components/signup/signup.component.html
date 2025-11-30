@@ -1,73 +1,76 @@
 <div class="signup-modal-bg">
     <form class="form form-modal" [formGroup]="formInfo" (ngSubmit)="register()">
         <button type="button" class="close-btn" (click)="closeModal()" aria-label="Close">&times;</button>
-        <p class="title">Register</p>
-        <p class="message">Signup now and get full access to our app.</p>
+        <p class="title">{{ 'SIGNUP_TITLE' | translate }}</p>
+        <p class="message">{{ 'SIGNUP_MESSAGE' | translate }}</p>
 
         <div class="flex">
             <label>
                 <input required="" placeholder="" type="text" class="input" formControlName="firstName">
-                <span>Firstname</span>
+                <span>{{ 'SIGNUP_FIRSTNAME' | translate }}</span>
             </label>
 
             <label>
                 <input required="" placeholder="" type="text" class="input" formControlName="lastName">
-                <span>Lastname</span>
+                <span>{{ 'SIGNUP_LASTNAME' | translate }}</span>
             </label>
         </div>
 
         <label>
             <input required="" placeholder="" type="number" class="input" formControlName="age">
-            <span>Age</span>
+            <span>{{ 'SIGNUP_AGE' | translate }}</span>
         </label>
 
         <label>
             <input required="" placeholder="" type="email" class="input" formControlName="email">
-            <span>Email</span>
+            <span>{{ 'SIGNUP_EMAIL' | translate }}</span>
         </label>
 
         <label>
             <input required="" placeholder="" type="password" class="input" formControlName="password">
-            <span>Password</span>
+            <span>{{ 'SIGNUP_PASSWORD' | translate }}</span>
         </label>
 
         <label>
             <input required="" placeholder="" type="password" class="input" formControlName="confirmPassword">
-            <span>Confirm password</span>
+            <span>{{ 'SIGNUP_CONFIRM_PASSWORD' | translate }}</span>
         </label>
 
         <label>
             <input required="" placeholder="" type="tel" class="input" formControlName="phone">
-            <span>Phone</span>
+            <span>{{ 'SIGNUP_PHONE' | translate }}</span>
         </label>
 
         <label>
             <input required="" placeholder="" type="text" class="input" formControlName="address">
-            <span>Address</span>
+            <span>{{ 'SIGNUP_ADDRESS' | translate }}</span>
         </label>
 
         <label>
             <input required="" placeholder="" type="text" class="input" formControlName="zipcode">
-            <span>Zipcode</span>
+            <span>{{ 'SIGNUP_ZIPCODE' | translate }}</span>
         </label>
 
         <label>
             <input required="" placeholder="" type="text" class="input" formControlName="avatar">
-            <span>Avatar URL</span>
+            <span>{{ 'SIGNUP_AVATAR_URL' | translate }}</span>
         </label>
 
         <div class="gender-field">
             <label>
                 <select class="input" formControlName="gender">
-                    <option value="">Choose a gender</option>
-                    <option value="MALE">&#9794; Male</option>
-                    <option value="FEMALE">&#9792; Female</option>
+                    <option value="">{{ 'SIGNUP_CHOOSE_GENDER' | translate }}</option>
+                    <option value="MALE">&#9794; {{ 'SIGNUP_MALE' | translate }}</option>
+                    <option value="FEMALE">&#9792; {{ 'SIGNUP_FEMALE' | translate }}</option>
                 </select>
-                <span>Gender</span>
+                <span>{{ 'SIGNUP_GENDER' | translate }}</span>
             </label>
         </div>
 
-        <button class="submit" type="submit">Submit</button>
-        <p class="signin">Already have an account? <a href="#" (click)="goToSignIn($event)">Signin</a></p>
+        <button class="submit" type="submit">{{ 'SIGNUP_SUBMIT' | translate }}</button>
+        <p class="signin">{{ 'SIGNUP_ALREADY_ACCOUNT' | translate }} <a href="#" (click)="goToSignIn($event)">{{
+                'SIGNUP_SIGNIN_LINK' | translate }}</a></p>
     </form>
+
+
 </div>

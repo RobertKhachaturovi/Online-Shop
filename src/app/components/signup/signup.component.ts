@@ -1,22 +1,40 @@
-import { Component, inject, Optional } from '@angular/core';
+import {
+  Component,
+  inject,
+  Optional,
+  OnInit,
+  OnDestroy,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ToolsService } from '../../tools.service';
-import { Router } from '@angular/router';
 import { Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Store, Select } from '@ngxs/store';
+import { LanguageState } from '../../state/language.state';
+import { Observable, Subscription } from 'rxjs';
+import { LanguageRoutingService } from '../../language-routing.service';
 
 @Component({
   selector: 'app-signup',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, TranslateModule],
   templateUrl: './signup.component.html',
   styleUrl: './signup.component.scss',
 })
-export class SignupComponent {
-  router = inject(Router);
+export class SignupComponent implements OnInit, OnDestroy {
+  private languageRouter = inject(LanguageRoutingService);
+
+  @Select(LanguageState.getCurrentLanguage)
+  currentLanguage$!: Observable<string>;
+  private languageSubscription?: Subscription;
 
   constructor(
     public service: ToolsService,
-    @Optional() public dialogRef: MatDialogRef<any>
+    @Optional() public dialogRef: MatDialogRef<any>,
+    private translate: TranslateService,
+    private store: Store,
+    private cdr: ChangeDetectorRef
   ) {}
 
   public formInfo: FormGroup = new FormGroup({
@@ -32,6 +50,37 @@ export class SignupComponent {
     avatar: new FormControl(''),
     gender: new FormControl(''),
   });
+
+  ngOnInit(): void {
+    const savedLang = localStorage.getItem('language') || 'ka';
+    if (savedLang !== this.translate.currentLang) {
+      this.translate.use(savedLang).subscribe(() => {
+        this.cdr.detectChanges();
+      });
+    }
+    this.translate.onLangChange.subscribe((event) => {
+      this.cdr.detectChanges();
+    });
+    this.languageSubscription = this.currentLanguage$.subscribe(
+      (lang: string) => {
+        if (lang) {
+          if (lang !== this.translate.currentLang) {
+            this.translate.use(lang).subscribe(() => {
+              this.cdr.detectChanges();
+            });
+          } else {
+            this.cdr.detectChanges();
+          }
+        }
+      }
+    );
+  }
+
+  ngOnDestroy(): void {
+    if (this.languageSubscription) {
+      this.languageSubscription.unsubscribe();
+    }
+  }
 
   register() {
     const formData = this.formInfo.value;
@@ -53,23 +102,35 @@ export class SignupComponent {
         !formData[field] ||
         (typeof formData[field] === 'string' && !formData[field].trim())
       ) {
-        alert('გთხოვთ შეავსოთ ყველა ველი!');
+        this.translate
+          .get('SIGNUP_FILL_ALL_FIELDS')
+          .subscribe((text: string) => {
+            alert(text);
+          });
         return;
       }
     }
 
     const emailPattern = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
     if (!emailPattern.test(formData.email)) {
-      alert('ელ.ფოსტა არასწორი ფორმატითაა!');
+      this.translate.get('SIGNUP_EMAIL_INVALID').subscribe((text: string) => {
+        alert(text);
+      });
       return;
     }
     if (formData.password !== formData.confirmPassword) {
-      alert('პაროლები არ ემთხვევა!');
+      this.translate
+        .get('SIGNUP_PASSWORDS_DONT_MATCH')
+        .subscribe((text: string) => {
+          alert(text);
+        });
       return;
     }
 
     if (isNaN(Number(formData.age)) || Number(formData.age) < 1) {
-      alert('ასაკი უნდა იყოს დადებითი რიცხვი!');
+      this.translate.get('SIGNUP_AGE_INVALID').subscribe((text: string) => {
+        alert(text);
+      });
       return;
     }
 
@@ -88,31 +149,43 @@ export class SignupComponent {
               if (this.dialogRef) {
                 this.dialogRef.close(true);
               } else {
-                this.router.navigate(['/profile']);
+                this.languageRouter.navigate(['profile']);
               }
             });
           } else {
-            alert('Signup successful but no token received');
+            this.translate
+              .get('SIGNUP_SUCCESS_NO_TOKEN')
+              .subscribe((text: string) => {
+                alert(text);
+              });
           }
         },
         error: (err) => {
-          let msg = 'Signup failed.';
+          let msgKey = 'SIGNUP_FAILED';
           if (err.error && err.error.message) {
-            msg = err.error.message;
-          } else if (err.error && typeof err.error === 'object') {
-            msg = JSON.stringify(err.error);
+            msgKey = 'SIGNUP_FAILED';
           } else if (err.status === 0) {
-            msg = 'Network error: Cannot connect to server';
+            msgKey = 'SIGNUP_NETWORK_ERROR';
           } else if (err.status === 400) {
-            msg = 'Bad request: Please check your input data';
+            msgKey = 'SIGNUP_BAD_REQUEST';
           } else if (err.status === 409) {
-            msg = 'User already exists with this email';
+            msgKey = 'SIGNUP_USER_EXISTS';
           }
-          alert(msg);
+          this.translate.get(msgKey).subscribe((text: string) => {
+            if (err.error && err.error.message) {
+              alert(err.error.message);
+            } else {
+              alert(text);
+            }
+          });
         },
       });
     } else {
-      alert('გთხოვთ შეავსოთ ყველა ველი სწორად');
+      this.translate
+        .get('SIGNUP_FILL_FIELDS_CORRECTLY')
+        .subscribe((text: string) => {
+          alert(text);
+        });
     }
   }
 
@@ -121,7 +194,7 @@ export class SignupComponent {
     if (this.dialogRef) {
       this.dialogRef.close('signin');
     } else {
-      this.router.navigate(['/auth']);
+      this.languageRouter.navigate(['auth']);
     }
   }
 
@@ -129,7 +202,7 @@ export class SignupComponent {
     if (this.dialogRef) {
       this.dialogRef.close();
     } else {
-      this.router.navigate(['/']);
+      this.languageRouter.navigate(['home']);
     }
   }
 }

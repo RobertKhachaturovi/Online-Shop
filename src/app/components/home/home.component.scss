@@ -263,7 +263,7 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 0;
-    margin-top: 75px;
+    margin-top: 0;
     padding: 0;
   }
 
@@ -284,7 +284,7 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 0;
-    margin-top: 70px;
+    margin-top: 0;
   }
 
   .main-content.shifted {
@@ -298,7 +298,7 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 0;
-    margin-top: 65px;
+    margin-top: 0;
   }
 }
 
@@ -308,7 +308,7 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 0;
-    margin-top: 60px;
+    margin-top: 0;
   }
 }
 
@@ -318,7 +318,7 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 0;
-    margin-top: 55px;
+    margin-top: 0;
   }
 }
 
@@ -328,7 +328,7 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 0;
-    margin-top: 50px;
+    margin-top: 0;
   }
 }
 
@@ -402,8 +402,7 @@
   .drawer-toggle-btn {
     width: 44px;
     height: 44px;
-    top: 70px;
-    left: 16px;
+    position: absolute;
   }
 
   .drawer-toggle-btn mat-icon {
@@ -595,7 +594,7 @@
   align-items: center;
   width: 100%;
   max-width: 420px;
-  margin: 0 auto 24px auto;
+  margin: 0 auto 45px auto;
   background: #f5faff;
   border-radius: 14px;
   box-shadow: 0 2px 12px rgba(25, 118, 210, 0.07);
@@ -632,7 +631,7 @@
 .search-icon {
   position: absolute;
   right: 18px;
-  top: 50%;
+  top: 55%;
   transform: translateY(-50%);
   color: #1976d2;
   font-size: 1.5rem;
@@ -668,6 +667,28 @@
 
   &:last-child {
     border-bottom: none;
+  }
+}
+.compare-btn {
+  margin-top: 10px;
+  width: 100%;
+  border-radius: 12px;
+  padding: 10px 0;
+  font-weight: 600;
+  transition: 0.25s ease;
+  border: 2px solid #6c5ce7;
+  color: #6c5ce7;
+
+  mat-icon {
+    margin-right: 6px;
+    font-size: 20px;
+  }
+
+  &:hover {
+    background: #6c5ce7;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);
   }
 }
 
@@ -1098,7 +1119,7 @@
   color: #fff;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
   border: none;
-  border-radius: 0 0 8px 0;
+  border-radius: 7px 0 8px 0;
   .stock-icon {
     margin-right: 3px;
     font-size: 13px;
@@ -1303,10 +1324,50 @@
   }
 }
 
+.floating-cart-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  background: #e53935;
+  color: #fff;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(229, 57, 53, 0.4);
+}
+.loader-wrapper {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.spinner {
+  width: 60px;
+  height: 60px;
+  border: 7px solid #dcdcdc;
+  border-top-color: #3f51b5;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .floating-receipt-btn {
   position: fixed;
   bottom: 32px;
-  right: 200px;
+  right: 220px;
   background: #222831;
   color: #fff;
   border-radius: 50px;
@@ -1329,7 +1390,6 @@
     border-color: #222831;
   }
 
-  // 📱 Responsive adjustments
   @media (max-width: 475px) {
     padding: 10px 16px;
     font-size: 10px;
@@ -1534,7 +1594,7 @@
 .last-search-text {
   position: absolute;
   left: 18px;
-  bottom: -28px;
+  bottom: -55px;
   font-size: 0.98rem;
   color: #90a4ae;
   font-style: italic;
@@ -1680,7 +1740,7 @@ button.close-btn mat-icon {
 
 .brand-panel-toggle {
   position: fixed;
-  top: 110px;
+  top: 150px;
   right: 0;
   z-index: 1300;
   background: #1976d2;

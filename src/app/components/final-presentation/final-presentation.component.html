@@ -1,0 +1,80 @@
+<div class="final-presentation-page">
+    <div class="confetti-overlay" *ngIf="showConfetti">
+        <div class="confetti-piece" *ngFor="let piece of confettiPieces" [style.--color]="piece.color"
+            [style.--left]="piece.left + '%'" [style.--delay]="piece.animationDelay + 's'">
+        </div>
+    </div>
+
+    <div class="presentation-container">
+        <div class="header">
+            <h1>{{ 'FINAL_ORDER_SUCCESS' | translate }}</h1>
+            <p>{{ 'FINAL_PRODUCTS_READY' | translate }}</p>
+        </div>
+
+        <div class="products-grid">
+            <div class="purchased-products">
+                <h2>{{ 'FINAL_PURCHASED_PRODUCTS' | translate }}</h2>
+
+                <div class="product-list">
+                    <div class="product-item" *ngFor="let item of purchasedItems; let i = index">
+                        <img [src]="item.product?.images?.[0] || 'https://via.placeholder.com/100x100?text=No+Image'"
+                            [alt]="item.product?.title" class="product-image">
+                        <div class="product-details">
+                            <h3>{{ item.product?.title || ('FINAL_NO_TITLE' | translate) }}</h3>
+                            <p class="quantity">{{ 'FINAL_QUANTITY' | translate }} {{ item.quantity || 0 }}</p>
+                            <p class="unit-price">
+                                {{ 'FINAL_UNIT_PRICE' | translate }} {{ (item.product?.price?.current || item.product?.price ||
+                                item.price?.current || item.price ||
+                                0) | number:'1.0-2' }} ₾
+                            </p>
+                            <p class="price">
+                                {{ 'FINAL_TOTAL_PRICE' | translate }} {{ (item.quantity * (item.product?.price?.current || item.product?.price ||
+                                item.price?.current ||
+                                item.price || 0)) | number:'1.0-2' }} ₾
+                            </p>
+                        </div>
+
+                    </div>
+                    <div *ngIf="purchasedItems.length === 0" class="no-items"
+                        style="text-align: center; padding: 20px; color: #666;">
+                        <p>{{ 'FINAL_NO_PURCHASED_ITEMS' | translate }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="gift-product" *ngIf="giftProduct">
+                <h2>{{ 'FINAL_GIFT' | translate }}</h2>
+                <div class="gift-container">
+                    <img [src]="giftProduct.avatar" [alt]="giftProduct.name" class="gift-image">
+                    <div class="gift-details">
+                        <h3>{{ giftProduct.name }}</h3>
+                        <div class="voice-message" *ngIf="voiceMessage">
+                            <p class="message-label">{{ 'FINAL_MESSAGE' | translate }}</p>
+                            <p class="message-text">"{{ voiceMessage }}"</p>
+                        </div>
+                        <div class="gift-badge">{{ 'FINAL_FREE' | translate }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="summary-section">
+            <div class="summary-card">
+                <h3>{{ 'FINAL_ORDER_DETAILS' | translate }}</h3>
+                <div class="summary-details">
+                    <p><strong>{{ 'FINAL_RECEIPT_NUMBER' | translate }}</strong> {{ receiptNumber }}</p>
+                    <p><strong>{{ 'FINAL_DATE' | translate }}</strong> {{ date }}</p>
+                    <p><strong>{{ 'FINAL_TOTAL_AMOUNT' | translate }}</strong> {{ total | number:'1.0-2' }} ₾</p>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="action-buttons">
+            <button class="print-btn" (click)="printReceipt()">{{ 'FINAL_PRINT_RECEIPT' | translate }}</button>
+            <button class="home-btn" (click)="goHome()">{{ 'FINAL_BACK_HOME' | translate }}</button>
+
+        </div>
+    </div>
+</div>

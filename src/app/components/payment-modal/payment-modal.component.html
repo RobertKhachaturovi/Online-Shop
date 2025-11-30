@@ -1,0 +1,67 @@
+<div class="payment-modal-container">
+    <div class="summary-box">
+        <h3>{{ 'PAYMENT_ORDER_REVIEW' | translate }}</h3>
+        <div class="summary-items" *ngIf="cartItems?.length">
+            <div class="summary-item" *ngFor="let item of cartItems">
+                <img [src]="item.product?.images?.[0] || 'https://via.placeholder.com/50'"
+                    [alt]="item.product?.title || ('PAYMENT_PRODUCT_IMAGE_NOT_AVAILABLE' | translate)" />
+                <div class="info">
+                    <div class="title">{{ item.product?.title }}</div>
+                    <div class="details">
+                        {{ 'PAYMENT_QUANTITY' | translate }} {{ item.quantity }} | {{ 'PAYMENT_UNIT_PRICE' | translate
+                        }}
+                        {{ item.product?.price?.current || item.product?.price }} ₾
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="total">
+            <strong>{{ 'PAYMENT_TOTAL_AMOUNT' | translate }}</strong>
+            {{ totalAmount | number : '1.2-2' }} ₾
+        </div>
+    </div>
+    <form [formGroup]="paymentForm">
+        <mat-form-field appearance="fill">
+            <mat-label>{{ 'PAYMENT_CARD_NUMBER' | translate }}</mat-label>
+            <input matInput formControlName="cardNumber" maxlength="16" required />
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+            <mat-label>{{ 'PAYMENT_FULL_NAME' | translate }}</mat-label>
+            <input matInput formControlName="cardHolder" required />
+        </mat-form-field>
+
+        <div class="row">
+            <mat-form-field appearance="fill">
+                <mat-label>{{ 'PAYMENT_EXPIRY' | translate }}</mat-label>
+                <input matInput formControlName="expiry" placeholder="MM/YY" required />
+            </mat-form-field>
+
+            <mat-form-field appearance="fill">
+                <mat-label>{{ 'PAYMENT_CVV' | translate }}</mat-label>
+                <input matInput formControlName="cvv" maxlength="3" required type="password" />
+            </mat-form-field>
+        </div>
+        <div class="three-boxes">
+            <div class="box">
+                <img src="https://madloba.info/media/images/logo_TBS.max-1920x1080.format-webp.mwtmk.webp"
+                    alt="TBC Bank" />
+            </div>
+            <div class="box">
+                <img src="https://gemug.ge/wp-content/uploads/2012/05/saqarthvelos-bankis-mobilbanki-aplikatsia.jpg"
+                    alt="Bank of Georgia" />
+            </div>
+            <div class="box">
+                <img src="https://libertybank.ge/m/i/logo-fb-en.png" alt="Liberty Bank" />
+            </div>
+        </div>
+        <div class="actions">
+            <button mat-button type="button" (click)="onCancel()">{{ 'PAYMENT_CANCEL' | translate }}</button>
+
+            <button mat-flat-button color="primary" type="button" [disabled]="paymentForm.invalid"
+                (click)="openGiftDialog()">
+                {{ 'PAYMENT_PAY' | translate }}
+            </button>
+        </div>
+    </form>
+</div>

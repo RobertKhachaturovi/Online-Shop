@@ -2,12 +2,12 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
-import { Router } from '@angular/router';
 import { ToolsService } from '../../tools.service';
 import { ReceiptModalComponent } from '../cart/receipt-modal.component';
 import { forkJoin } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { LanguageRoutingService } from '../../language-routing.service';
 
 @Component({
   selector: 'app-placing-order',
@@ -111,8 +111,8 @@ export class PlacingOrderComponent {
   constructor(
     private toolsService: ToolsService,
     private dialog: MatDialog,
-    private router: Router,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private languageRouter: LanguageRoutingService
   ) {
     this.loadCart();
     this.orderForm = this.fb.group({
@@ -177,6 +177,14 @@ export class PlacingOrderComponent {
     this.showCheckoutAnimation = true;
     this.createConfetti();
     const cartItemsCopy = [...this.cartItems];
+    const decrementedSnapshotItems = cartItemsCopy.map((item: any) => {
+      const currentStock = item.product?.stock ?? 0;
+      const newStock = Math.max(0, currentStock - (item.quantity ?? 0));
+      return {
+        ...item,
+        product: { ...item.product, stock: newStock },
+      };
+    });
     const cartTotalCopy = this.cartTotal;
     this.toolsService.checkoutCart().subscribe({
       next: () => {
@@ -185,7 +193,7 @@ export class PlacingOrderComponent {
         setTimeout(() => {
           this.showCheckoutAnimation = false;
           this.confettiPieces = [];
-          this.cartItems = cartItemsCopy;
+          this.cartItems = decrementedSnapshotItems;
           this.cartTotal = cartTotalCopy;
           this.openReceiptModal();
           this.cartItems = [];
@@ -210,7 +218,7 @@ export class PlacingOrderComponent {
       disableClose: false,
     });
     dialogRef.afterClosed().subscribe(() => {
-      this.router.navigate(['/home']);
+      this.languageRouter.navigate(['home']);
     });
   }
 

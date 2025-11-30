@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { Router, RouterModule } from '@angular/router';
+import { Component, OnInit, OnDestroy, Renderer2 } from '@angular/core';
+import { CartStateService, normalizeCartItems } from '../../cart-state.service';
+import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { ToolsService } from '../../tools.service';
 import { MatDialog } from '@angular/material/dialog';
 import { AuthModalComponent } from '../auth-modal/auth-modal.component';
@@ -10,6 +11,14 @@ import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { CartService } from '../../cart.service';
+import { Observable, Subscription, filter, combineLatest } from 'rxjs';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Store, Select } from '@ngxs/store';
+import { LanguageState, SetLanguage } from '../../state/language.state';
+import { ChangeDetectorRef, ApplicationRef } from '@angular/core';
+import { CurrencyExchangeComponent } from '../exchange/exchange.component';
+import { CompareComponent } from '../compare/compare.component';
+import { LanguageRoutingService } from '../../language-routing.service';
 
 @Component({
   selector: 'app-home',
@@ -21,11 +30,14 @@ import { CartService } from '../../cart.service';
     RouterModule,
     MatButtonModule,
     MatIconModule,
+    TranslateModule,
+    CurrencyExchangeComponent,
+    CompareComponent,
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, OnDestroy {
   public allProducts: any;
   public pageList: number[] = [];
   public selectedCategoryId: number | null = null;
@@ -34,6 +46,7 @@ export class HomeComponent implements OnInit {
   public selectedBrand: string | null = null;
   public onlyDiscounted: boolean = false;
   public Math = Math;
+  isLoading = true;
   public minRating: number = 0;
   public onlyInStock: boolean = false;
   public expandedCardId: string | null = null;
@@ -54,6 +67,12 @@ export class HomeComponent implements OnInit {
   public showBrandPanel = false;
   public itemsPerPageOptions = [6, 9, 18, 36, 'ALL'];
   public showBest: boolean = false;
+  public cartCount: number = 0;
+  private authSubscription?: Subscription;
+  private routerSubscription?: Subscription;
+  private languageSubscription?: Subscription;
+  @Select(LanguageState.getCurrentLanguage)
+  currentLanguage$!: Observable<string>;
   get itemsPerPageNumber(): number {
     return this.itemsPerPage === 'ALL' ? 38 : this.itemsPerPage;
   }
@@ -79,7 +98,6 @@ export class HomeComponent implements OnInit {
     });
     return productsCopy.slice(0, 9);
   }
-
   toggleBestProducts() {
     this.showBest = !this.showBest;
   }
@@ -101,16 +119,68 @@ export class HomeComponent implements OnInit {
   }
 
   constructor(
+    private renderer: Renderer2,
     private tools: ToolsService,
     private dialog: MatDialog,
     private router: Router,
-    private cartService: CartService
+    private cartService: CartService,
+    private cartState: CartStateService,
+    private translate: TranslateService,
+    private store: Store,
+    private cdr: ChangeDetectorRef,
+    private appRef: ApplicationRef,
+    public languageRouter: LanguageRoutingService
   ) {
     this.allProduct(1);
+
+    this.tools.getCart().subscribe((data: any) => {
+      console.log(data);
+
+      this.cartCount = data.products.length;
+      console.log(this.cartCount);
+    });
+  }
+
+  addToCompare(item: any) {
+    let compareList = JSON.parse(localStorage.getItem('compareList') || '[]');
+
+    if (!compareList.find((p: any) => p._id === item._id)) {
+      compareList.push(item);
+      localStorage.setItem('compareList', JSON.stringify(compareList));
+    }
+
+    this.languageRouter.navigate(['compare']);
   }
 
   ngOnInit() {
     console.log('=== HOME COMPONENT INITIALIZED ===');
+    const savedLang = localStorage.getItem('language') || 'ka';
+    if (savedLang !== this.translate.currentLang) {
+      this.translate.use(savedLang).subscribe(() => {
+        this.cdr.detectChanges();
+      });
+    }
+
+    this.translate.onLangChange.subscribe((event) => {
+      console.log('Language changed in home component:', event.lang);
+      this.cdr.detectChanges();
+    });
+
+    this.languageSubscription = this.currentLanguage$.subscribe(
+      (lang: string) => {
+        if (lang) {
+          console.log('Language changed from store:', lang);
+          if (lang !== this.translate.currentLang) {
+            this.translate.use(lang).subscribe(() => {
+              this.cdr.detectChanges();
+            });
+          } else {
+            this.cdr.detectChanges();
+          }
+        }
+      }
+    );
+
     this.tools.getBrands().subscribe((brands) => {
       this.brands = brands;
     });
@@ -128,22 +198,53 @@ export class HomeComponent implements OnInit {
       this.lastSearch = lastSearch;
     }
     this.buildBrandsWithImages();
+    this.syncCartCountFromServer();
+
+    this.authSubscription = this.tools.authState$.subscribe(
+      (isAuthenticated) => {
+        if (!isAuthenticated) {
+          this.cartState.setCount(0);
+        } else {
+          this.syncCartCountFromServer();
+        }
+      }
+    );
+
+    this.routerSubscription = this.router.events
+      .pipe(filter((event) => event instanceof NavigationEnd))
+      .subscribe((event: any) => {
+        if (event.url === '/' || event.urlAfterRedirects === '/') {
+          this.syncCartCountFromServer();
+        }
+      });
+  }
+
+  ngOnDestroy() {
+    this.authSubscription?.unsubscribe();
+    this.routerSubscription?.unsubscribe();
+    this.languageSubscription?.unsubscribe();
   }
 
   allProduct(page: number) {
+    this.isLoading = true;
     const pageSize = this.itemsPerPageNumber;
-    console.log('=== LOADING PRODUCTS ===');
-    this.selectedCategoryId = null;
-    this.tools.productsAll(page, pageSize).subscribe((data: any) => {
-      console.log('Products loaded:', data.products?.length || 0, 'products');
-      this.allProducts = data.products;
-      this.allProducts.forEach((product: any) => {
-        console.log('PRICE STRUCTURE:', product.price);
-      });
-      this.setupPagination(data.total, data.limit);
-      this.buildBrandsWithImages();
+
+    this.tools.productsAll(page, pageSize).subscribe({
+      next: (data: any) => {
+        this.allProducts = data.products;
+        this.setupPagination(data.total, data.limit);
+      },
+      error: (err) => {
+        console.error(err);
+      },
+      complete: () => {
+        setTimeout(() => {
+          this.isLoading = false;
+        }, 400);
+      },
     });
   }
+
   showCategory(categoryId: number, page: number = 1) {
     const pageSize = this.itemsPerPageNumber;
     this.selectedCategoryId = categoryId;
@@ -196,7 +297,7 @@ export class HomeComponent implements OnInit {
     }
     console.log('Navigating to product detail:', id);
     this.showSuggestions = false;
-    this.router.navigate(['/product-detail', id]);
+    this.languageRouter.navigate(['product-detail', id]);
   }
 
   hideSuggestions() {
@@ -419,7 +520,7 @@ export class HomeComponent implements OnInit {
       .slice(0, 5);
   }
 
-  addToCart(item: any) {
+  addToCart(item: any, event?: MouseEvent) {
     const isAuthenticated = !!sessionStorage.getItem('user');
     if (!isAuthenticated) {
       const dialogRef = this.dialog.open(AuthModalComponent, {
@@ -430,34 +531,161 @@ export class HomeComponent implements OnInit {
 
       dialogRef.afterClosed().subscribe((result) => {
         if (result === true) {
-          this.addToCartAfterAuth(item);
+          this.addToCartAfterAuth(item, event);
         }
       });
       return;
     }
 
-    this.addToCartAfterAuth(item);
+    this.addToCartAfterAuth(item, event);
   }
 
-  private addToCartAfterAuth(item: any) {
-    this.tools.addToCart(item._id, 1).subscribe({
-      next: () => {
-        this.showSuccessMap.set(item._id, true);
-        setTimeout(() => {
-          this.showSuccessMap.set(item._id, false);
-        }, 3000);
+  private addToCartAfterAuth(item: any, event?: MouseEvent) {
+    const productId = item._id || item.id;
+
+    this.tools.getCart().subscribe({
+      next: (data: any) => {
+        const items = normalizeCartItems(data);
+        const existing = items.find(
+          (i: any) =>
+            i?.productId === productId ||
+            i?.id === productId ||
+            (i?.product &&
+              (i.product._id === productId || i.product.id === productId))
+        );
+        const newQty = (existing?.quantity || 0) + 1;
+
+        this.tools.addToCart(productId, newQty).subscribe({
+          next: () => {
+            this.showSuccessMap.set(productId, true);
+            setTimeout(() => {
+              this.showSuccessMap.set(productId, false);
+            }, 3000);
+            this.animateFlyToCart(event, item);
+            this.cartCount++;
+          },
+          error: (err) => {
+            if (err?.error?.errorKeys?.includes('errors.token_expired')) {
+              alert(
+                'სესიის ვადა ამოიწურა, გთხოვთ გაიაროთ ავტორიზაცია თავიდან!'
+              );
+              sessionStorage.removeItem('user');
+              this.tools.setAuthState(false);
+              return;
+            }
+            alert('მარაგი ამოიწურა');
+            console.error('შეცდომა კალათაში დამატებისას:', err);
+          },
+        });
       },
-      error: (err) => {
-        if (err?.error?.errorKeys?.includes('errors.token_expired')) {
-          alert('სესიის ვადა ამოიწურა, გთხოვთ გაიაროთ ავტორიზაცია თავიდან!');
-          sessionStorage.removeItem('user');
-          this.tools.setAuthState(false);
-          return;
-        }
-        alert('დაფიქსირდა შეცდომა კალათაში დამატებისას!');
-        console.error('შეცდომა კალათაში დამატებისას:', err);
+      error: () => {
+        this.tools.addToCart(productId, 1).subscribe({
+          next: () => {
+            this.showSuccessMap.set(productId, true);
+            setTimeout(() => {
+              this.showSuccessMap.set(productId, false);
+            }, 3000);
+            this.animateFlyToCart(event, item);
+            this.cartState.increment(1);
+          },
+          error: (err) => {
+            if (err?.error?.errorKeys?.includes('errors.token_expired')) {
+              alert(
+                'სესიის ვადა ამოიწურა, გთხოვთ გაიაროთ ავტორიზაცია თავიდან!'
+              );
+              sessionStorage.removeItem('user');
+              this.tools.setAuthState(false);
+              return;
+            }
+            alert('დაფიქსირდა შეცდომა კალათაში დამატებისას!');
+            console.error('შეცდომა კალათაში დამატებისას:', err);
+          },
+        });
       },
     });
+  }
+
+  private animateFlyToCart(event: MouseEvent | undefined, item: any) {
+    try {
+      const sourceImg: HTMLImageElement | null =
+        this.findProductImageElement(item);
+      const cartAnchor = document.querySelector(
+        '.floating-cart-btn'
+      ) as HTMLElement | null;
+      if (!sourceImg || !cartAnchor) return;
+
+      const imgRect = sourceImg.getBoundingClientRect();
+      const cartRect = cartAnchor.getBoundingClientRect();
+
+      const clone = sourceImg.cloneNode(true) as HTMLImageElement;
+      clone.style.position = 'fixed';
+      clone.style.left = imgRect.left + 'px';
+      clone.style.top = imgRect.top + 'px';
+      clone.style.width = imgRect.width + 'px';
+      clone.style.height = imgRect.height + 'px';
+      clone.style.zIndex = '2000';
+      clone.style.pointerEvents = 'none';
+      clone.style.transition =
+        'transform 1.6s cubic-bezier(0.22, 1, 0.36, 1), opacity 1.2s ease, width 1.6s ease, height 1.6s ease';
+      clone.style.borderRadius = '8px';
+      document.body.appendChild(clone);
+
+      const translateX =
+        cartRect.left + cartRect.width / 2 - (imgRect.left + imgRect.width / 2);
+      const translateY =
+        cartRect.top + cartRect.height / 2 - (imgRect.top + imgRect.height / 2);
+
+      requestAnimationFrame(() => {
+        clone.style.transform = `translate(${translateX}px, ${translateY}px) scale(0.3)`;
+        clone.style.opacity = '0.25';
+        clone.style.width = Math.max(40, imgRect.width * 0.3) + 'px';
+        clone.style.height = Math.max(40, imgRect.height * 0.3) + 'px';
+      });
+
+      const onArrive = () => {
+        setTimeout(() => {
+          clone.remove();
+          cartAnchor.animate(
+            [
+              { transform: 'scale(1)' },
+              { transform: 'scale(1.18)' },
+              { transform: 'scale(1)' },
+            ],
+            { duration: 360, easing: 'ease-out' }
+          );
+        }, 120);
+      };
+      clone.addEventListener('transitionend', onArrive, { once: true });
+    } catch {}
+  }
+
+  private findProductImageElement(item: any): HTMLImageElement | null {
+    try {
+      const productId = item._id || item.id;
+      const candidates = Array.from(
+        document.querySelectorAll('.modern-card')
+      ) as HTMLElement[];
+      for (const card of candidates) {
+        const titleEl = card.querySelector('.product-title');
+        if (
+          titleEl &&
+          titleEl.textContent &&
+          item.title &&
+          titleEl.textContent.trim() === String(item.title).trim()
+        ) {
+          const img = card.querySelector(
+            'img.modern-card-img'
+          ) as HTMLImageElement | null;
+          if (img) return img;
+        }
+      }
+      const anyImg = document.querySelector(
+        'img.modern-card-img'
+      ) as HTMLImageElement | null;
+      return anyImg;
+    } catch {
+      return null;
+    }
   }
 
   openReceiptSearch() {
@@ -469,6 +697,11 @@ export class HomeComponent implements OnInit {
 
   onDrawerToggled(open: boolean) {
     this.isDrawerOpen = open;
+    if (open) {
+      document.body.classList.add('drawer-open');
+    } else {
+      document.body.classList.remove('drawer-open');
+    }
   }
 
   getUserEmail() {
@@ -485,6 +718,47 @@ export class HomeComponent implements OnInit {
     this.favorites = favs ? JSON.parse(favs) : [];
   }
 
+  private syncCartCountFromServer() {
+    try {
+      const isAuthenticated = !!sessionStorage.getItem('user');
+      if (!isAuthenticated) {
+        this.cartState.setCount(0);
+        return;
+      }
+
+      this.tools.getCart().subscribe({
+        next: (data: any) => {
+          this.cartState.syncFromPayload(data);
+
+          const items = normalizeCartItems(data);
+          if (!items || items.length === 0) {
+            localStorage.removeItem('cart');
+            this.cartState.setCount(0);
+          }
+        },
+        error: () => {
+          try {
+            const local = localStorage.getItem('cart');
+            if (local) {
+              const arr = JSON.parse(local);
+              this.cartState.syncFromPayload(arr);
+            } else {
+              this.cartState.setCount(0);
+            }
+          } catch {
+            this.cartState.setCount(0);
+          }
+        },
+      });
+    } catch {
+      this.cartState.setCount(0);
+    }
+  }
+  openExchangeModal() {
+    this.dialog.open(CurrencyExchangeComponent, {
+      width: '350px',
+    });
+  }
   isFavorite(product: any): boolean {
     return this.favorites.some((p) => p.id === (product._id || product.id));
   }
@@ -519,7 +793,7 @@ export class HomeComponent implements OnInit {
   }
 
   goToFavorites() {
-    this.router.navigate(['/favorites']);
+    this.languageRouter.navigate(['favorites']);
   }
 
   buildBrandsWithImages() {
@@ -574,7 +848,7 @@ export class HomeComponent implements OnInit {
   buyNow(item: any) {
     const productId = item._id || item.id || item.productId;
     this.tools.addToCart(productId, 1).subscribe(() => {
-      this.router.navigate(['/placing-order']);
+      this.languageRouter.navigate(['placing-order']);
     });
   }
   public brandModelSuggestions: string[] = [];

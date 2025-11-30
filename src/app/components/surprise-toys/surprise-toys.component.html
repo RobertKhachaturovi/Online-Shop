@@ -1,0 +1,65 @@
+<div class="surprise-toys-page">
+    <div class="promo-banner">
+        {{ 'SURPRISE_PROMO_BANNER' | translate }}
+    </div>
+    <div *ngIf="!selectedProduct" class="grid-container">
+        <div class="card" *ngFor="let product of visibleProducts" (click)="selectProduct(product)">
+            <img [src]="product.avatar" [alt]="product.name" />
+            <p>{{ product.name }}</p>
+        </div>
+    </div>
+    <div *ngIf="!selectedProduct && visibleProducts.length < products.length" class="show-more">
+        <button (click)="showMore()">{{ 'SURPRISE_SHOW_MORE' | translate }}</button>
+    </div>
+    <div *ngIf="selectedProduct" class="card-detail">
+        <h2>{{ 'SURPRISE_YOU_SELECTED' | translate }} {{ selectedProduct.name }}</h2>
+        <img [src]="selectedProduct.avatar" [alt]="selectedProduct.name" />
+        <div class="lang-select">
+            <label>{{ 'SURPRISE_SELECT_LANGUAGE' | translate }}</label>
+            <select [(ngModel)]="selectedLang">
+                <option value="ka-GE">ქართული</option>
+                <option value="en-US">English</option>
+                <option value="ru-RU">Русский</option>
+            </select>
+        </div>
+        <div class="voice-section">
+            <button (click)="startRecording()" [disabled]="isRecording">{{ 'SURPRISE_START_RECORDING' | translate
+                }}</button>
+            <button (click)="stopRecording()" [disabled]="!isRecording">{{ 'SURPRISE_STOP_RECORDING' | translate
+                }}</button>
+            <div class="manual-text">
+                <label for="manualText">{{ 'SURPRISE_OR_ENTER_TEXT' | translate }}</label>
+                <textarea id="manualText" [(ngModel)]="voiceText" rows="3" maxlength="200"
+                    [placeholder]="'SURPRISE_ENTER_TEXT_MANUALLY' | translate" class="manual-textarea"></textarea>
+                <div class="helper">
+                    <span>{{ 'SURPRISE_TEXT_WILL_APPEAR' | translate }}</span>
+                    <span class="counter">{{ voiceText.length }}/200</span>
+                </div>
+            </div>
+        </div>
+        <div *ngIf="voiceText" class="card-preview">
+            <h3>{{ 'SURPRISE_YOUR_CARD_READY' | translate }}</h3>
+            <div class="preview">
+                <img [src]="selectedProduct.avatar" [alt]="selectedProduct.name" />
+                <p>{{ voiceText }}</p>
+            </div>
+        </div>
+
+
+        <div *ngIf="voiceText && !isWrappingComplete" class="wrap-section">
+            <button (click)="wrapGift()" class="wrap-btn">{{ 'SURPRISE_WRAP_GIFT' | translate }}</button>
+        </div>
+
+
+        <div *ngIf="isWrappingComplete" class="wrapping-animation">
+            <div class="wrapping-container">
+                <div class="wrapping-icon">🎁</div>
+                <h3>{{ 'SURPRISE_WRAPPING_IN_PROGRESS' | translate }}</h3>
+                <div class="loading-spinner"></div>
+            </div>
+        </div>
+
+        <button (click)="resetSelection()" class="back-btn" *ngIf="!isWrappingComplete">{{ 'SURPRISE_BACK_TO_TOYS' |
+            translate }}</button>
+    </div>
+</div>

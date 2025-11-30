@@ -6,6 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-receipt-search',
@@ -17,18 +18,19 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     MatInputModule,
     MatIconModule,
     MatTooltipModule,
+    TranslateModule,
   ],
   template: `
     <div class="receipt-search-modal">
-      <h2>ქვითრის გადამოწმება</h2>
+      <h2>{{ 'RECEIPT_TITLE' | translate }}</h2>
 
       <div class="search-section">
         <mat-form-field appearance="outline" class="search-input">
-          <mat-label>ქვითრის ნომერი</mat-label>
+          <mat-label>{{ 'RECEIPT_NUMBER_LABEL' | translate }}</mat-label>
           <input
             matInput
             [(ngModel)]="searchNumber"
-            placeholder="მაგ: INV-1751826113094"
+            [placeholder]="'RECEIPT_NUMBER_PLACEHOLDER' | translate"
             (keyup.enter)="searchReceipt()"
           />
           <mat-icon matSuffix>receipt</mat-icon>
@@ -41,38 +43,32 @@ import { MatTooltipModule } from '@angular/material/tooltip';
           [disabled]="!searchNumber.trim()"
         >
           <mat-icon>search</mat-icon>
-          ძიება
+          {{ 'SEARCH_BUTTON' | translate }}
         </button>
       </div>
 
       <div class="debug-section">
-        <button
-          mat-stroked-button
-          color="accent"
-          (click)="showAllReceipts()"
-          style="margin-bottom: 16px;"
-        >
+        <button mat-stroked-button color="accent" (click)="showAllReceipts()">
           <mat-icon>list</mat-icon>
-          ყველა (Debug)
+          {{ 'SHOW_ALL_DEBUG' | translate }}
         </button>
         <button
           mat-stroked-button
           color="warn"
           (click)="deleteAllReceipts()"
-          style="margin-left: 12px; margin-bottom: 16px;"
-          matTooltip="ყველა ქვითრის წაშლა"
+          [matTooltip]="'DELETE_ALL_TOOLTIP' | translate"
         >
           <mat-icon>delete</mat-icon>
-          ყველა ქვითრის წაშლა
+          {{ 'DELETE_ALL_BUTTON' | translate }}
         </button>
       </div>
 
       <div *ngIf="showAllReceiptsList" class="all-receipts-section">
-        <h3>ყველა დამახსოვრებული ქვითარი</h3>
+        <h3>{{ 'ALL_RECEIPTS_TITLE' | translate }}</h3>
 
         <div *ngIf="allReceipts.length === 0" class="no-receipts">
           <mat-icon>receipt_long</mat-icon>
-          <p>ქვითრები არ არის!</p>
+          <p>{{ 'NO_RECEIPTS' | translate }}</p>
         </div>
 
         <div *ngIf="allReceipts.length > 0" class="receipts-list">
@@ -85,7 +81,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
                   mat-icon-button
                   (click)="copyReceiptNumber(receipt.receiptNumber)"
                   class="copy-btn"
-                  matTooltip="ქვითრის ნომრის კოპირება"
+                  [matTooltip]="'COPY_RECEIPT_TOOLTIP' | translate"
                 >
                   <mat-icon>content_copy</mat-icon>
                 </button>
@@ -94,10 +90,11 @@ import { MatTooltipModule } from '@angular/material/tooltip';
             </div>
             <div class="receipt-details">
               <div class="items-count">
-                პროდუქტები: {{ receipt.items.length }}
+                {{ 'ITEMS_COUNT' | translate }}: {{ receipt.items.length }}
               </div>
               <div class="total-amount">
-                ჯამი: {{ receipt.total.toFixed(2) }} ₾
+                {{ 'TOTAL_AMOUNT' | translate }}:
+                {{ receipt.total.toFixed(2) }} ₾
               </div>
             </div>
             <button
@@ -107,19 +104,25 @@ import { MatTooltipModule } from '@angular/material/tooltip';
               class="view-receipt-btn"
             >
               <mat-icon>visibility</mat-icon>
-              ნახვა
+              {{ 'VIEW_RECEIPT' | translate }}
             </button>
           </div>
         </div>
       </div>
 
       <div *ngIf="errorMessage" class="error-message">
-        {{ errorMessage }}
+        {{ errorMessage | translate }}
       </div>
 
       <div *ngIf="foundReceipt" class="receipt-result">
-        <h3>ქვითარი #{{ foundReceipt.receiptNumber }}</h3>
-        <div class="receipt-date">თარიღი: {{ foundReceipt.date }}</div>
+        <h3>
+          {{ 'RECEIPT_NUMBER_TITLE' | translate }} #{{
+            foundReceipt.receiptNumber
+          }}
+        </h3>
+        <div class="receipt-date">
+          {{ 'DATE_LABEL' | translate }}: {{ foundReceipt.date }}
+        </div>
 
         <div class="receipt-items">
           <div *ngFor="let item of foundReceipt.items" class="receipt-item">
@@ -135,8 +138,9 @@ import { MatTooltipModule } from '@angular/material/tooltip';
             <div class="item-details">
               <div class="item-title">{{ item.title }}</div>
               <div class="item-info">
-                რაოდენობა: {{ item.quantity }} | ფასი: {{ item.price }} ₾ |
-                მარაგი: {{ item.stock || 'N/A' }}
+                {{ 'QUANTITY_LABEL' | translate }}: {{ item.quantity }} |
+                {{ 'PRICE_LABEL' | translate }}: {{ item.price }} ₾ |
+                {{ 'STOCK_LABEL' | translate }}: {{ item.stock || 'N/A' }}
               </div>
             </div>
             <div class="item-total">
@@ -146,14 +150,17 @@ import { MatTooltipModule } from '@angular/material/tooltip';
         </div>
 
         <div class="receipt-total">
-          <strong
-            >სრული ჯამური ფასი: {{ foundReceipt.total.toFixed(2) }} ₾</strong
-          >
+          <strong>
+            {{ 'TOTAL_PRICE_LABEL' | translate }}:
+            {{ foundReceipt.total.toFixed(2) }} ₾
+          </strong>
         </div>
       </div>
 
       <div class="modal-actions">
-        <button mat-button (click)="close()">დახურვა</button>
+        <button mat-button (click)="close()">
+          {{ 'CLOSE_BUTTON' | translate }}
+        </button>
       </div>
     </div>
   `,
@@ -343,11 +350,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
         line-height: 16px;
       }
 
-      .receipt-date {
-        color: #666;
-        font-size: 14px;
-      }
-
       .receipt-details {
         display: flex;
         justify-content: space-between;
@@ -412,37 +414,25 @@ export class ReceiptSearchComponent {
 
   searchReceipt() {
     if (!this.searchNumber.trim()) {
-      this.errorMessage = 'გთხოვთ შეიყვანოთ ქვითრის ნომერი';
+      this.errorMessage = 'ERROR_ENTER_RECEIPT' as any;
       return;
     }
-
-    console.log('🔍 ძიება ქვითრის ნომრით:', this.searchNumber.trim());
 
     const receiptHistory = JSON.parse(
       localStorage.getItem('receiptHistory') || '[]'
     );
-    console.log('📋 ყველა ქვითარი localStorage-ში:', receiptHistory);
-
-    const found = receiptHistory.find((receipt: any) => {
-      const match =
+    const found = receiptHistory.find(
+      (receipt: any) =>
         receipt.receiptNumber.toLowerCase() ===
-        this.searchNumber.trim().toLowerCase();
-      console.log(
-        `🔍 შედარება: "${
-          receipt.receiptNumber
-        }" === "${this.searchNumber.trim()}" = ${match}`
-      );
-      return match;
-    });
+        this.searchNumber.trim().toLowerCase()
+    );
 
     if (found) {
-      console.log('✅ ქვითარი ნაპოვნია:', found);
       this.foundReceipt = found;
       this.errorMessage = '';
     } else {
-      console.log('❌ ქვითარი არ მოიძებნა');
       this.foundReceipt = null;
-      this.errorMessage = 'ქვითარი არ მოიძებნა. გთხოვთ შეამოწმოთ ნომერი.';
+      this.errorMessage = 'ERROR_RECEIPT_NOT_FOUND' as any;
     }
   }
 
@@ -454,19 +444,11 @@ export class ReceiptSearchComponent {
     const receiptHistory = JSON.parse(
       localStorage.getItem('receiptHistory') || '[]'
     );
-    console.log('⚙️ loaded receiptHistory =', receiptHistory);
     this.allReceipts = receiptHistory;
     this.showAllReceiptsList = !this.showAllReceiptsList;
-
-    if (receiptHistory.length === 0) {
-      console.log('❌ქვითრები არ არის!');
-    } else {
-      console.log(`✅ ${receiptHistory.length} ქვითარია`);
-    }
   }
 
   selectReceipt(receipt: any) {
-    console.log('👁️ არჩეული ქვითარი:', receipt);
     this.foundReceipt = receipt;
     this.searchNumber = receipt.receiptNumber;
     this.errorMessage = '';
@@ -474,18 +456,7 @@ export class ReceiptSearchComponent {
   }
 
   copyReceiptNumber(receiptNumber: string) {
-    const cleanNumber = receiptNumber.startsWith('#')
-      ? receiptNumber.substring(1)
-      : receiptNumber;
-
-    navigator.clipboard
-      .writeText(cleanNumber)
-      .then(() => {
-        console.log('📋 ქვითრის ნომერი კოპირებულია:', cleanNumber);
-      })
-      .catch((err) => {
-        console.error('❌ კოპირების შეცდომა:', err);
-      });
+    navigator.clipboard.writeText(receiptNumber).then(() => {});
   }
 
   deleteAllReceipts() {

@@ -9,6 +9,39 @@
   width: 100%;
   max-width: 1600px;
   margin: 0 auto;
+  position: relative;
+  z-index: 999;
+  transition: padding 0.3s ease, transform 0.3s ease;
+}
+@media (max-width: 900px) {
+  body.drawer-open .footer-container {
+    padding: 12px 8px 0 8px;
+    transform: scale(0.95);
+  }
+
+  body.drawer-open .footer-methods-title {
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+
+  body.drawer-open .footer-cards-row {
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  body.drawer-open .payment-card {
+    padding: 3px;
+  }
+
+  body.drawer-open .footer-cards-row img {
+    height: 14px;
+    max-width: 35px;
+  }
+
+  body.drawer-open .footer-copyright {
+    font-size: 0.7rem;
+    padding: 8px 0;
+  }
 }
 
 .footer-methods {
@@ -111,39 +144,9 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .footer-container {
-    padding: 20px 12px 0 12px;
-  }
-
-  .footer-methods-title {
-    font-size: 1.1rem;
-    margin-bottom: 20px;
-  }
-
-  .footer-cards-row {
-    gap: 12px;
-    margin-bottom: 20px;
-  }
-
-  .payment-card {
-    padding: 6px;
-  }
-
-  .footer-cards-row img {
-    height: 20px;
-    max-width: 50px;
-  }
-
-  .footer-copyright {
-    font-size: 0.9rem;
-    padding: 14px 0;
-  }
-}
-
-@media (max-width: 480px) {
-  .footer-container {
-    padding: 16px 8px 0 8px;
+    padding: 16px 12px 0 12px;
   }
 
   .footer-methods-title {
@@ -152,12 +155,12 @@
   }
 
   .footer-cards-row {
-    gap: 8px;
+    gap: 10px;
     margin-bottom: 16px;
   }
 
   .payment-card {
-    padding: 4px;
+    padding: 5px;
   }
 
   .footer-cards-row img {
@@ -168,6 +171,66 @@
   .footer-copyright {
     font-size: 0.85rem;
     padding: 12px 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .footer-container {
+    padding: 16px 12px 0 12px;
+  }
+
+  .footer-methods-title {
+    font-size: 0.95rem;
+    margin-bottom: 14px;
+  }
+
+  .footer-cards-row {
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .payment-card {
+    padding: 4px;
+  }
+
+  .footer-cards-row img {
+    height: 16px;
+    max-width: 40px;
+  }
+
+  .footer-copyright {
+    font-size: 0.8rem;
+    padding: 10px 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-container {
+    padding: 12px 8px 0 8px;
+  }
+
+  .footer-methods-title {
+    font-size: 0.9rem;
+    margin-bottom: 12px;
+  }
+
+  .footer-cards-row {
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .payment-card {
+    padding: 3px;
+  }
+
+  .footer-cards-row img {
+    height: 14px;
+    max-width: 35px;
+  }
+
+  .footer-copyright {
+    font-size: 0.75rem;
+    padding: 8px 0;
   }
 }
 

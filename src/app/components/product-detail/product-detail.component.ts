@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -11,6 +11,11 @@ import { RouterModule } from '@angular/router';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Store, Select } from '@ngxs/store';
+import { LanguageState } from '../../state/language.state';
+import { Subscription } from 'rxjs';
+import { LanguageRoutingService } from '../../language-routing.service';
 
 @Component({
   selector: 'app-product-detail',
@@ -24,11 +29,12 @@ import { MatInputModule } from '@angular/material/input';
     MatTabsModule,
     MatFormFieldModule,
     MatInputModule,
+    TranslateModule,
   ],
   templateUrl: './product-detail.component.html',
   styleUrl: './product-detail.component.scss',
 })
-export class ProductDetailComponent implements OnInit {
+export class ProductDetailComponent implements OnInit, OnDestroy {
   product: any = null;
   loading = true;
   error = false;
@@ -45,15 +51,32 @@ export class ProductDetailComponent implements OnInit {
   reviewComment = '';
 
   reviews: any[] = [];
+  private languageSubscription?: Subscription;
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
     private tools: ToolsService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private translate: TranslateService,
+    private store: Store,
+    private cdr: ChangeDetectorRef,
+    private languageRouter: LanguageRoutingService
   ) {}
 
   ngOnInit() {
+    this.translate.onLangChange.subscribe(() => {
+      this.cdr.detectChanges();
+    });
+    this.languageSubscription = this.store
+      .select(LanguageState.getCurrentLanguage)
+      .subscribe((lang: string) => {
+        if (lang && lang !== this.translate.currentLang) {
+          this.translate.use(lang).subscribe(() => {
+            this.cdr.detectChanges();
+          });
+        }
+      });
+
     this.route.paramMap.subscribe((params) => {
       const id = params.get('id');
       console.log('ProductDetailComponent initialized with ID:', id);
@@ -66,6 +89,10 @@ export class ProductDetailComponent implements OnInit {
         return;
       }
     });
+  }
+
+  ngOnDestroy() {
+    this.languageSubscription?.unsubscribe();
   }
 
   loadProduct(id: string) {
@@ -151,15 +178,12 @@ export class ProductDetailComponent implements OnInit {
   selectImage(index: number) {
     this.selectedImageIndex = index;
   }
-
   addToCart(productId: string) {
     console.log(' დამატება კალათაში, ID:', productId);
 
     const user = sessionStorage.getItem('user');
     if (!user) {
-      console.log(
-        'მომხმარებელი არაა ავტორიზებული. იხსნება ავტორიზაციის მოდალი...'
-      );
+      console.log('მომხმარებელი არაა ავტორიზებული.');
       const dialogRef = this.dialog.open(AuthModalComponent, {
         width: '400px',
         disableClose: true,
@@ -176,18 +200,48 @@ export class ProductDetailComponent implements OnInit {
 
     this.showCartAnimation = true;
 
-    this.tools.addToCart(productId, 1).subscribe({
-      next: (res) => {
-        console.log('✅ წარმატებით დაემატა კალათაში:', res);
-        setTimeout(() => {
-          this.showCartAnimation = false;
-          this.router.navigate(['/cart']);
-        }, 3000);
+    this.tools.getCart().subscribe({
+      next: (data: any) => {
+        const items = data?.products || data?.cart || [];
+        const existing = items.find(
+          (i: any) =>
+            i?.productId === productId ||
+            i?.id === productId ||
+            (i?.product &&
+              (i.product._id === productId || i.product.id === productId))
+        );
+        const newQty = (existing?.quantity || 0) + 1;
+
+        this.tools.addToCart(productId, newQty).subscribe({
+          next: (res) => {
+            console.log('✅ წარმატებით დაემატა კალათაში:', res);
+            setTimeout(() => {
+              this.showCartAnimation = false;
+              this.languageRouter.navigate(['cart']);
+            }, 3000);
+          },
+          error: (err) => {
+            console.error(' შეცდომა კალათაში დამატებისას:', err);
+            this.showCartAnimation = false;
+            alert('დაფიქსირდა შეცდომა კალათაში დამატებისას!');
+          },
+        });
       },
-      error: (err) => {
-        console.error(' შეცდომა კალათაში დამატებისას:', err);
-        this.showCartAnimation = false;
-        alert('დაფიქსირდა შეცდომა კალათაში დამატებისას!');
+      error: () => {
+        this.tools.addToCart(productId, 1).subscribe({
+          next: (res) => {
+            console.log('✅ წარმატებით დაემატა კალათაში (fallback):', res);
+            setTimeout(() => {
+              this.showCartAnimation = false;
+              this.languageRouter.navigate(['cart']);
+            }, 3000);
+          },
+          error: (err) => {
+            console.error(' შეცდომა კალათაში დამატებისას (fallback):', err);
+            this.showCartAnimation = false;
+            alert('დაფიქსირდა შეცდომა კალათაში დამატებისას!');
+          },
+        });
       },
     });
   }
@@ -197,7 +251,7 @@ export class ProductDetailComponent implements OnInit {
   }
 
   goBack() {
-    this.router.navigate(['/']);
+    this.languageRouter.navigate(['home']);
   }
 
   getDiscountPercentage() {
@@ -265,15 +319,15 @@ export class ProductDetailComponent implements OnInit {
 
   submitRating() {
     if (this.rating === 0) {
-      alert('გთხოვთ აირჩიოთ რეიტინგი');
+      alert(this.translate.instant('PLEASE_SELECT_RATING'));
       return;
     }
     if (!this.reviewerName.trim() || !this.reviewerLastName.trim()) {
-      alert('გთხოვთ შეიყვანოთ სახელი და გვარი');
+      alert(this.translate.instant('PLEASE_ENTER_NAME'));
       return;
     }
     if (!this.reviewComment.trim()) {
-      alert('გთხოვთ შეიყვანოთ კომენტარი');
+      alert(this.translate.instant('PLEASE_ENTER_COMMENT'));
       return;
     }
     console.log('შეფასების გაგზავნა:', {
@@ -308,12 +362,11 @@ export class ProductDetailComponent implements OnInit {
         },
         error: (error: any) => {
           console.error('API-ზე გაგზავნის შეცდომა:', error);
-          console.log(' შეფასება შენახულია localStorage-ში');
         },
       });
     this.closeRatingModal();
     this.selectedTabIndex = 0;
-    alert('შეფასება წარმატებით დაემატა!');
+    alert(this.translate.instant('REVIEW_ADDED_SUCCESS'));
   }
 
   saveRatingsToLocalStorage() {
@@ -337,7 +390,7 @@ export class ProductDetailComponent implements OnInit {
   }
 
   deleteReview(reviewId: number) {
-    if (confirm('ნამდვილად გსურთ ამ შეფასების წაშლა?')) {
+    if (confirm(this.translate.instant('CONFIRM_DELETE_REVIEW'))) {
       this.reviews = this.reviews.filter((review) => review.id !== reviewId);
 
       this.saveRatingsToLocalStorage();

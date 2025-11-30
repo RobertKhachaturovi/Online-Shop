@@ -1,18 +1,24 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { ToolsService } from '../../tools.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
 import { ProfileSettingsModalComponent } from './profile-settings-modal.component';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Store, Select } from '@ngxs/store';
+import { LanguageState } from '../../state/language.state';
+import { Observable, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslateModule],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.scss',
 })
-export class ProfileComponent implements OnInit {
+export class ProfileComponent implements OnInit, OnDestroy {
+  loading: boolean = true;
+
   public userInfo: any = {};
   updateData: any = {};
   updateSuccess: string = '';
@@ -34,8 +40,19 @@ export class ProfileComponent implements OnInit {
   showRecovery = false;
   showVerifyEmail = false;
   showDelete = false;
+  
 
-  constructor(public service: ToolsService, private dialog: MatDialog) {}
+  @Select(LanguageState.getCurrentLanguage)
+  currentLanguage$!: Observable<string>;
+  private languageSubscription?: Subscription;
+
+  constructor(
+    public service: ToolsService,
+    private dialog: MatDialog,
+    private translate: TranslateService,
+    private store: Store,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   private closeAllSections() {
     this.showUpdateForm = false;
@@ -60,7 +77,6 @@ export class ProfileComponent implements OnInit {
     }
 
     this.closeAllSections();
-
     switch (section) {
       case 'update':
         this.showUpdateForm = true;
@@ -81,10 +97,24 @@ export class ProfileComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.service.getUser().subscribe((data: any) => {
-      this.userInfo = data;
-      this.updateData = { ...data };
+    this.loading = true;
+
+    this.service.getUser().subscribe({
+      next: (data: any) => {
+        this.userInfo = data;
+        this.updateData = { ...data };
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+      },
     });
+  }
+
+  ngOnDestroy(): void {
+    if (this.languageSubscription) {
+      this.languageSubscription.unsubscribe();
+    }
   }
 
   openSettingsModal() {
@@ -93,26 +123,39 @@ export class ProfileComponent implements OnInit {
       data: { user: this.userInfo },
     });
   }
+
   updateProfile() {
     this.updateSuccess = '';
     this.updateError = '';
+
     this.service.updateProfile(this.updateData).subscribe({
-      next: (res) => {
-        this.updateSuccess = 'პროფილი განახლდა!';
+      next: () => {
+        this.translate
+          .get('PROFILE_UPDATE_SUCCESS')
+          .subscribe((text: string) => {
+            this.updateSuccess = text;
+          });
         this.userInfo = { ...this.updateData };
       },
       error: (err) => {
-        this.updateError = 'შეცდომა: ' + (err.error?.message || '');
+        this.translate.get('PROFILE_UPDATE_ERROR').subscribe((text: string) => {
+          this.updateError = text + ' ' + (err.error?.message || '');
+        });
       },
     });
   }
+
   changePassword() {
     this.passwordSuccess = '';
     this.passwordError = '';
+
     if (this.newPassword !== this.confirmPassword) {
-      this.passwordError = 'პაროლები არ ემთხვევა!';
+      this.translate
+        .get('PROFILE_PASSWORDS_DONT_MATCH')
+        .subscribe((t) => (this.passwordError = t));
       return;
     }
+
     this.service
       .changePassword({
         oldPassword: this.oldPassword,
@@ -120,52 +163,63 @@ export class ProfileComponent implements OnInit {
       })
       .subscribe({
         next: () => {
-          this.passwordSuccess = 'პაროლი წარმატებით შეიცვალა!';
+          this.translate
+            .get('PROFILE_PASSWORD_CHANGED_SUCCESS')
+            .subscribe((t) => (this.passwordSuccess = t));
           this.oldPassword = this.newPassword = this.confirmPassword = '';
         },
         error: (err) => {
-          this.passwordError = 'შეცდომა: ' + (err.error?.message || '');
+          this.translate.get('PROFILE_PASSWORD_ERROR').subscribe((t) => {
+            this.passwordError = t + ' ' + (err.error?.message || '');
+          });
         },
       });
   }
+
   recoverPassword() {
     this.recoverySuccess = '';
     this.recoveryError = '';
+
     this.service.recoverPassword({ email: this.recoveryEmail }).subscribe({
       next: () => {
-        this.recoverySuccess = 'პაროლის აღდგენის ბმული გაიგზავნა ელ.ფოსტაზე!';
+        this.translate
+          .get('PROFILE_RECOVERY_LINK_SENT')
+          .subscribe((t) => (this.recoverySuccess = t));
       },
       error: (err) => {
-        this.recoveryError = 'შეცდომა: ' + (err.error?.message || '');
+        this.translate.get('PROFILE_RECOVERY_ERROR').subscribe((t) => {
+          this.recoveryError = t + ' ' + (err.error?.message || '');
+        });
       },
     });
   }
+
   verifyEmail() {
     this.verifyEmailSuccess = '';
     this.verifyEmailError = '';
 
     if (!this.userInfo.email) {
-      this.verifyEmailError = 'ელ.ფოსტა არ არის მითითებული!';
+      this.translate
+        .get('PROFILE_EMAIL_NOT_SPECIFIED')
+        .subscribe((t) => (this.verifyEmailError = t));
       return;
     }
 
     this.service.verifyEmail({ email: this.userInfo.email }).subscribe({
-      next: (response: any) => {
-        this.verifyEmailSuccess =
-          'ვერიფიკაციის ბმული გაიგზავნა თქვენს ელ.ფოსტაზე!';
-        console.log('Verification email sent successfully', response);
+      next: () => {
+        this.translate
+          .get('PROFILE_VERIFICATION_LINK_SENT')
+          .subscribe((t) => (this.verifyEmailSuccess = t));
       },
       error: (err) => {
-        console.error('Email verification error:', err);
-        if (err.error?.message) {
-          this.verifyEmailError = err.error.message;
-        } else if (
-          err.error?.errorKeys?.includes('errors.email_already_verified')
-        ) {
-          this.verifyEmailError = 'ეს ელ.ფოსტა უკვე ვერიფიცირებულია!';
+        if (err.error?.errorKeys?.includes('errors.email_already_verified')) {
+          this.translate
+            .get('PROFILE_EMAIL_ALREADY_VERIFIED')
+            .subscribe((t) => (this.verifyEmailError = t));
         } else {
-          this.verifyEmailError =
-            'დაფიქსირდა შეცდომა ვერიფიკაციის ბმულის გაგზავნისას. გთხოვთ სცადოთ მოგვიანებით.';
+          this.translate
+            .get('PROFILE_VERIFICATION_ERROR')
+            .subscribe((t) => (this.verifyEmailError = t));
         }
       },
     });
@@ -174,14 +228,22 @@ export class ProfileComponent implements OnInit {
   deleteAccount() {
     this.deleteSuccess = '';
     this.deleteError = '';
-    if (!confirm('ნამდვილად გსურთ ანგარიშის წაშლა?')) return;
-    this.service.deleteAccount().subscribe({
-      next: () => {
-        this.deleteSuccess = 'ანგარიში წაიშალა!';
-      },
-      error: (err) => {
-        this.deleteError = 'შეცდომა: ' + (err.error?.message || '');
-      },
+
+    this.translate.get('PROFILE_DELETE_CONFIRM').subscribe((text: string) => {
+      if (!confirm(text)) return;
+
+      this.service.deleteAccount().subscribe({
+        next: () => {
+          this.translate
+            .get('PROFILE_ACCOUNT_DELETED')
+            .subscribe((s) => (this.deleteSuccess = s));
+        },
+        error: (err) => {
+          this.translate.get('PROFILE_DELETE_ERROR').subscribe((e) => {
+            this.deleteError = e + ' ' + (err.error?.message || '');
+          });
+        },
+      });
     });
   }
 }

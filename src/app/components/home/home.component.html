@@ -1,3 +1,7 @@
+<div class="loader-wrapper" *ngIf="isLoading">
+    <div class="spinner"></div>
+</div>
+
 <div class="home-layout" (click)="hideSuggestions()">
 
     <app-side-drawer (categorySelected)="onCategorySelected($event)" (brandSelected)="onBrandSelect($event)"
@@ -8,20 +12,24 @@
         <button class="drawer-toggle-btn" (click)="drawer.toggleDrawer()" *ngIf="!isDrawerOpen">
             <mat-icon>menu</mat-icon>
         </button>
-        <div class="home-search-bar">
 
+
+
+        <div class="home-search-bar">
             <div class="search-input-wrapper">
-                <input type="text" placeholder="პროდუქტის ძიება..." [(ngModel)]="searchString"
+                <input type="text" [placeholder]="'SEARCH_PLACEHOLDER' | translate" [(ngModel)]="searchString"
                     (input)="onSearch(searchString)" (click)="$event.stopPropagation()"
                     (focus)="onSearchInputFocus()" />
                 <span class="search-icon">
                     <mat-icon>search</mat-icon>
                 </span>
                 <div class="last-search-text" *ngIf="lastSearch">
-                    ბოლო ძებნა: {{ lastSearch }}
+                    {{ 'LAST_SEARCH' | translate }} {{ lastSearch }}
                 </div>
             </div>
-
+            <button mat-raised-button color="primary" (click)="openExchangeModal()">
+                {{ 'EXCHANGE_RATE' | translate }}
+            </button>
             <div class="search-suggestions"
                 *ngIf="showSuggestions && searchString && searchString.trim().length > 1 && filteredSuggestions.length > 0"
                 (click)="$event.stopPropagation()">
@@ -43,7 +51,7 @@
         </button>
         <div class="brand-side-panel" [class.open]="showBrandPanel">
             <div class="brand-panel-header">
-                <span>ბრენდები</span>
+                <span>{{ 'BRANDS' | translate }}</span>
                 <button class="close-btn" (click)="showBrandPanel = false">
                     <mat-icon>close</mat-icon>
                 </button>
@@ -59,22 +67,22 @@
                 </div>
                 <div class="brand-card" (click)="selectBrand(null)" [class.selected]="!selectedBrand">
                     <img src="https://ekracargo.com/public/uploads/all/YfWdPOyDnPMxQi8ktGIkZyhidHkIG46UalYKaoxk.jpg"
-                        alt="ყველა" />
-                    <div class="brand-name">ALL</div>
+                        [alt]="'ALL' | translate" />
+                    <div class="brand-name">{{ 'ALL' | translate }}</div>
                 </div>
             </div>
         </div>
 
         <button class="best-products-toggle" (click)="toggleBestProducts()" [class.active]="showBest">
             <mat-icon>{{ showBest ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}</mat-icon>
-            <span>საუკეთესო შეთავაზებები</span>
+            <span>{{ 'BEST_OFFERS' | translate }}</span>
         </button>
 
         <section *ngIf="showBest && bestProducts.length > 0" class="best-products"
             [@slideInOut]="showBest ? 'in' : 'out'">
             <div class="best-products__header">
-                <h2>საუკეთესო შეთავაზებები</h2>
-                <span class="best-products__subtitle">უმაღლესი რეიტინგით და ფასით შერჩეული</span>
+                <h2>{{ 'BEST_OFFERS' | translate }}</h2>
+                <span class="best-products__subtitle">{{ 'BEST_OFFERS_SUBTITLE' | translate }}</span>
             </div>
             <div class="best-products__grid">
                 <div class="best-card" *ngFor="let item of bestProducts; let i = index" (click)="onCardAction(item)">
@@ -139,10 +147,10 @@
                     <span *ngIf="item.stock <= 0" class="stock-icon">✘</span>
                     <span>
                         <ng-container *ngIf="item.stock > 0">
-                            In Stock : {{ item.stock }}
+                            {{ 'IN_STOCK' | translate }} {{ item.stock }}
                         </ng-container>
                         <ng-container *ngIf="item.stock <= 0">
-                            Not in stock
+                            {{ 'NOT_IN_STOCK' | translate }}
                         </ng-container>
                     </span>
                 </div>
@@ -157,7 +165,7 @@
                             <ng-container *ngIf="item.description; else noDesc">
                                 {{ item.description }}
                             </ng-container>
-                            <ng-template #noDesc>No description available for this product.</ng-template>
+                            <ng-template #noDesc>{{ 'NO_DESCRIPTION' | translate }}</ng-template>
                         </p>
                     </div>
                 </div>
@@ -180,26 +188,35 @@
                         </ng-template>
                     </div>
                     <div *ngIf="showSuccessMap.get(item._id)" class="cart-success-msg">
-                        წარმატებით დაემატა კალათაში!
+                        {{ 'ADDED_TO_CART' | translate }}
                     </div>
                     <button mat-stroked-button color="primary" class="add-to-cart-btn" [disabled]="item.stock <= 0"
-                        (click)="addToCart(item); $event.stopPropagation()">
+                        (click)="addToCart(item, $event); $event.stopPropagation()">
                         <mat-icon>shopping_cart</mat-icon>
-                        Add to Cart
+                        {{ 'ADD_TO_CART' | translate }}
                     </button>
+                    <button mat-stroked-button color="accent" class="compare-btn"
+                        (click)="addToCompare(item); $event.stopPropagation()">
+                        <mat-icon>compare_arrows</mat-icon>
+                        {{ 'COMPARE' | translate }}
+                    </button>
+
                 </div>
             </div>
             }
         </section>
 
     </div>
-    <a routerLink="/cart" class="floating-cart-btn">
+    <a [routerLink]="languageRouter.createLink(['cart'])" class="floating-cart-btn">
         <mat-icon>shopping_cart</mat-icon>
-        კალათა
+        {{ 'CART' | translate }}
+        <ng-container>
+            <span class="floating-cart-badge">{{ cartCount }}</span>
+        </ng-container>
     </a>
     <button class="floating-receipt-btn" (click)="openReceiptSearch()">
         <mat-icon>receipt</mat-icon>
-        ქვითრის გადამოწმება
+        {{ 'RECEIPT_CHECK' | translate }}
     </button>
 </div>
 <div class="pagination-container" *ngIf="pageList.length > 0">
@@ -212,9 +229,10 @@
         }
     </div>
     <div class="items-per-page-select">
-        <label for="itemsPerPage">Items per page:</label>
+        <label for="itemsPerPage">{{ 'ITEMS_PER_PAGE' | translate }}</label>
         <select id="itemsPerPage" [(ngModel)]="itemsPerPage" (ngModelChange)="onItemsPerPageChange($event)">
-            <option *ngFor="let option of itemsPerPageOptions" [ngValue]="option">{{ option === 'all' ? 'all' : option
+            <option *ngFor="let option of itemsPerPageOptions" [ngValue]="option">{{ option === 'all' ? ('ALL_OPTION' |
+                translate) : option
                 }}</option>
         </select>
     </div>

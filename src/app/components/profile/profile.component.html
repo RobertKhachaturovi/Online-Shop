@@ -1,155 +1,168 @@
-<div class="profile-container">
+<div class="loader-wrapper" *ngIf="loading">
+    <div class="spinner"></div>
+</div>
+
+<div class="profile-container" *ngIf="!loading">
     <div class="profile-header">
         <div class="profile-avatar" *ngIf="userInfo.avatar">
             <img [src]="userInfo.avatar" alt="Avatar" />
         </div>
+
         <div class="profile-avatar-placeholder" *ngIf="!userInfo.avatar">
             <i class="material-icons">person</i>
         </div>
-        <h2>გამარჯობა, {{ userInfo.firstName || 'მომხმარებელო' }} {{ userInfo.lastName || '' }}</h2>
+
+        <h2>{{ 'PROFILE_HELLO' | translate }}, {{ userInfo.firstName || ('PROFILE_USER' | translate) }} {{
+            userInfo.lastName || '' }}</h2>
     </div>
 
     <div class="profile-info-section">
-        <h3>პროფილის ინფორმაცია</h3>
+        <h3>{{ 'PROFILE_INFO' | translate }}</h3>
         <div class="info-grid">
             <div class="info-item">
                 <i class="material-icons">email</i>
                 <div class="info-content">
-                    <span class="info-label">ელ.ფოსტა</span>
-                    <span class="info-value">{{ userInfo.email || 'არ არის მითითებული' }}</span>
+                    <span class="info-label">{{ 'PROFILE_EMAIL' | translate }}</span>
+                    <span class="info-value">{{ userInfo.email || ('PROFILE_NOT_SPECIFIED' | translate) }}</span>
                 </div>
             </div>
             <div class="info-item">
                 <i class="material-icons">phone</i>
                 <div class="info-content">
-                    <span class="info-label">ტელეფონი</span>
-                    <span class="info-value">{{ userInfo.phone || 'არ არის მითითებული' }}</span>
+                    <span class="info-label">{{ 'PROFILE_PHONE' | translate }}</span>
+                    <span class="info-value">{{ userInfo.phone || ('PROFILE_NOT_SPECIFIED' | translate) }}</span>
                 </div>
             </div>
             <div class="info-item">
                 <i class="material-icons">cake</i>
                 <div class="info-content">
-                    <span class="info-label">ასაკი</span>
-                    <span class="info-value">{{ userInfo.age || 'არ არის მითითებული' }}</span>
+                    <span class="info-label">{{ 'PROFILE_AGE' | translate }}</span>
+                    <span class="info-value">{{ userInfo.age || ('PROFILE_NOT_SPECIFIED' | translate) }}</span>
                 </div>
             </div>
             <div class="info-item">
                 <i class="material-icons">location_on</i>
                 <div class="info-content">
-                    <span class="info-label">მისამართი</span>
-                    <span class="info-value">{{ userInfo.address || 'არ არის მითითებული' }}</span>
+                    <span class="info-label">{{ 'PROFILE_ADDRESS' | translate }}</span>
+                    <span class="info-value">{{ userInfo.address || ('PROFILE_NOT_SPECIFIED' | translate) }}</span>
                 </div>
             </div>
             <div class="info-item">
                 <i class="material-icons">markunread_mailbox</i>
                 <div class="info-content">
-                    <span class="info-label">Zipcode</span>
-                    <span class="info-value">{{ userInfo.zipcode || 'არ არის მითითებული' }}</span>
+                    <span class="info-label">{{ 'PROFILE_ZIPCODE' | translate }}</span>
+                    <span class="info-value">{{ userInfo.zipcode || ('PROFILE_NOT_SPECIFIED' | translate) }}</span>
                 </div>
             </div>
             <div class="info-item">
                 <i class="material-icons">wc</i>
                 <div class="info-content">
-                    <span class="info-label">სქესი</span>
-                    <span class="info-value">{{ userInfo.gender || 'არ არის მითითებული' }}</span>
+                    <span class="info-label">{{ 'PROFILE_GENDER' | translate }}</span>
+                    <span class="info-value">{{ userInfo.gender || ('PROFILE_NOT_SPECIFIED' | translate) }}</span>
                 </div>
             </div>
         </div>
     </div>
 
     <div class="profile-actions">
-        <h3>ანგარიშის მართვა</h3>
+        <h3>{{ 'PROFILE_ACCOUNT_MANAGEMENT' | translate }}</h3>
 
         <div class="action-buttons">
             <button class="action-btn primary" (click)="toggleSection('update')">
                 <i class="material-icons">edit</i>
-                პროფილის განახლება
+                {{ 'PROFILE_UPDATE_PROFILE' | translate }}
             </button>
 
             <button class="action-btn secondary" (click)="toggleSection('password')">
                 <i class="material-icons">lock</i>
-                პაროლის შეცვლა
+                {{ 'PROFILE_CHANGE_PASSWORD' | translate }}
             </button>
 
             <button class="action-btn secondary" (click)="toggleSection('recovery')">
                 <i class="material-icons">restore</i>
-                პაროლის აღდგენა
+                {{ 'PROFILE_RECOVER_PASSWORD' | translate }}
             </button>
 
             <button class="action-btn secondary" (click)="toggleSection('verify')">
                 <i class="material-icons">verified_user</i>
-                Email ვერიფიკაცია
+                {{ 'PROFILE_EMAIL_VERIFICATION' | translate }}
             </button>
-
-
         </div>
+
         <div style="display: flex; justify-content: center; margin-top: 16px;">
             <button class="action-btn danger" (click)="toggleSection('delete')">
                 <i class="material-icons">delete_forever</i>
-                ანგარიშის წაშლა
+                {{ 'PROFILE_DELETE_ACCOUNT' | translate }}
             </button>
         </div>
     </div>
 
-
     <div *ngIf="showUpdateForm" class="profile-section">
-        <h4>პროფილის განახლება</h4>
+        <h4>{{ 'PROFILE_UPDATE_PROFILE' | translate }}</h4>
         <form (ngSubmit)="updateProfile()">
             <div class="form-grid">
-                <label>სახელი: <input [(ngModel)]="updateData.firstName" name="firstName"></label>
-                <label>გვარი: <input [(ngModel)]="updateData.lastName" name="lastName"></label>
-                <label>ტელეფონი: <input [(ngModel)]="updateData.phone" name="phone"></label>
-                <label>ასაკი: <input [(ngModel)]="updateData.age" name="age" type="number"></label>
-                <label>მისამართი: <input [(ngModel)]="updateData.address" name="address"></label>
-                <label>Zipcode: <input [(ngModel)]="updateData.zipcode" name="zipcode"></label>
-                <label>სქესი: <input [(ngModel)]="updateData.gender" name="gender"></label>
-                <label>Avatar URL: <input [(ngModel)]="updateData.avatar" name="avatar"></label>
+                <label>{{ 'PROFILE_FIRST_NAME' | translate }}: <input [(ngModel)]="updateData.firstName"
+                        name="firstName"></label>
+                <label>{{ 'PROFILE_LAST_NAME' | translate }}: <input [(ngModel)]="updateData.lastName"
+                        name="lastName"></label>
+                <label>{{ 'PROFILE_PHONE' | translate }}: <input [(ngModel)]="updateData.phone" name="phone"></label>
+                <label>{{ 'PROFILE_AGE' | translate }}: <input [(ngModel)]="updateData.age" name="age"
+                        type="number"></label>
+                <label>{{ 'PROFILE_ADDRESS' | translate }}: <input [(ngModel)]="updateData.address"
+                        name="address"></label>
+                <label>{{ 'PROFILE_ZIPCODE' | translate }}: <input [(ngModel)]="updateData.zipcode"
+                        name="zipcode"></label>
+                <label>{{ 'PROFILE_GENDER' | translate }}: <input [(ngModel)]="updateData.gender" name="gender"></label>
+                <label>{{ 'PROFILE_AVATAR_URL' | translate }}: <input [(ngModel)]="updateData.avatar"
+                        name="avatar"></label>
             </div>
-            <button type="submit" class="submit-btn">განახლება</button>
+            <button type="submit" class="submit-btn">{{ 'PROFILE_UPDATE' | translate }}</button>
             <span class="success" *ngIf="updateSuccess">{{ updateSuccess }}</span>
             <span class="error" *ngIf="updateError">{{ updateError }}</span>
         </form>
     </div>
 
-
     <div *ngIf="showChangePassword" class="profile-section">
-        <h4>პაროლის შეცვლა</h4>
+        <h4>{{ 'PROFILE_CHANGE_PASSWORD' | translate }}</h4>
         <form (ngSubmit)="changePassword()">
-            <label>ძველი პაროლი: <input [(ngModel)]="oldPassword" name="oldPassword" type="password"></label>
-            <label>ახალი პაროლი: <input [(ngModel)]="newPassword" name="newPassword" type="password"></label>
-            <label>გაიმეორე ახალი პაროლი: <input [(ngModel)]="confirmPassword" name="confirmPassword"
+            <label>{{ 'PROFILE_OLD_PASSWORD' | translate }}: <input [(ngModel)]="oldPassword" name="oldPassword"
                     type="password"></label>
-            <button type="submit" class="submit-btn">შეცვლა</button>
+            <label>{{ 'PROFILE_NEW_PASSWORD' | translate }}: <input [(ngModel)]="newPassword" name="newPassword"
+                    type="password"></label>
+            <label>{{ 'PROFILE_CONFIRM_PASSWORD' | translate }}: <input [(ngModel)]="confirmPassword"
+                    name="confirmPassword" type="password"></label>
+            <button type="submit" class="submit-btn">{{ 'PROFILE_CHANGE' | translate }}</button>
             <span class="success" *ngIf="passwordSuccess">{{ passwordSuccess }}</span>
             <span class="error" *ngIf="passwordError">{{ passwordError }}</span>
         </form>
     </div>
 
-
     <div *ngIf="showRecovery" class="profile-section">
-        <h4>პაროლის აღდგენა</h4>
+        <h4>{{ 'PROFILE_RECOVER_PASSWORD' | translate }}</h4>
         <form (ngSubmit)="recoverPassword()">
-            <label>ელ.ფოსტა: <input [(ngModel)]="recoveryEmail" name="recoveryEmail" type="email"></label>
-            <button type="submit" class="submit-btn">აღდგენა</button>
+            <label>{{ 'PROFILE_EMAIL' | translate }}: <input [(ngModel)]="recoveryEmail" name="recoveryEmail"
+                    type="email"></label>
+            <button type="submit" class="submit-btn">{{ 'PROFILE_RECOVER' | translate }}</button>
             <span class="success" *ngIf="recoverySuccess">{{ recoverySuccess }}</span>
             <span class="error" *ngIf="recoveryError">{{ recoveryError }}</span>
         </form>
     </div>
 
-
     <div *ngIf="showVerifyEmail" class="profile-section">
-        <h4>Email ვერიფიკაცია</h4>
-        <button (click)="verifyEmail()" type="button" class="submit-btn">გაგზავნე ვერიფიკაციის ბმული</button>
+        <h4>{{ 'PROFILE_EMAIL_VERIFICATION' | translate }}</h4>
+        <button (click)="verifyEmail()" type="button" class="submit-btn">{{ 'PROFILE_SEND_VERIFICATION_LINK' | translate
+            }}</button>
         <span class="success" *ngIf="verifyEmailSuccess">{{ verifyEmailSuccess }}</span>
         <span class="error" *ngIf="verifyEmailError">{{ verifyEmailError }}</span>
     </div>
 
-
     <div *ngIf="showDelete" class="profile-section danger-section">
-        <h4>ანგარიშის წაშლა</h4>
-        <p class="warning-text">⚠️ ყურადღება! ეს ქმედება შეუქცევადია.</p>
-        <button (click)="deleteAccount()" type="button" class="submit-btn danger">წაშლა</button>
+        <h4>{{ 'PROFILE_DELETE_ACCOUNT' | translate }}</h4>
+        <p class="warning-text">{{ 'PROFILE_WARNING_IRREVERSIBLE' | translate }}</p>
+        <button (click)="deleteAccount()" type="button" class="submit-btn danger">{{ 'PROFILE_DELETE' | translate
+            }}</button>
         <span class="success" *ngIf="deleteSuccess">{{ deleteSuccess }}</span>
         <span class="error" *ngIf="deleteError">{{ deleteError }}</span>
     </div>
+
 </div>
